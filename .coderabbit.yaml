@@ -7,10 +7,14 @@
 # - Usage limits on files and conversations per hour
 
 # Global settings
-review:
-  # Enable basic reviews (free plan compatible)
-  enabled: true
-
+reviews:
+  # Automatic code review (free plan compatible)
+  auto_review:
+    enabled: true
+  # Surface review + commit status in PRs
+  review_status: true
+  commit_status: true
+  profile: chill
   # Free plan 2025 limitations
   # Note: Detailed line-by-line reviews not available in free plan
   # Only PR summarization and IDE reviews are available

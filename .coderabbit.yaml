@@ -19,6 +19,11 @@ reviews:
   # Note: Detailed line-by-line reviews not available in free plan
   # Only PR summarization and IDE reviews are available
 
+  # GitHub integration tools
+  tools:
+    github-checks:
+      enabled: true
+
   # Path filters
   path_filters:
     - "**/*.py"
@@ -180,20 +185,3 @@ notifications:
   # Notify on performance issues
   performance_issues: true
 
-# Integration settings
-integrations:
-  # GitHub integration
-  github:
-    enabled: true
-
-    # Check status
-    status_checks: true
-
-    # Comment on commits
-    comment_on_commits: false
-
-    # Review pull requests
-    review_pull_requests: true
-
-    # Review issues
-    review_issues: false

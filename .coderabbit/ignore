@@ -79,10 +79,9 @@ coverage.xml
 # Jupyter Notebook checkpoints
 .ipynb_checkpoints/
 
-# Environment files (but review .env.example)
-.env
-.env.local
-.env.production
+# Environment files - REMOVED to allow CodeRabbit to scan for leaked secrets
+# .env files should be reviewed by CodeRabbit to detect potential security issues
+# Keep them in .gitignore for local developer workflows
 
 # Docker volumes
 postgres_data/
@@ -123,3 +122,7 @@ redis_data/
 *.otf
 *.woff
 *.woff2
+
+# Local rulesets (for manual import to GitHub)
+# Keep parity with .gitignore
+rulesets-local/

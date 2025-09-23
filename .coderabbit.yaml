@@ -184,4 +184,3 @@ notifications:
 
   # Notify on performance issues
   performance_issues: true
-

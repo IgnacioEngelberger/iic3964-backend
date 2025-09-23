@@ -178,3 +178,6 @@ cython_debug/
 .Trashes
 ehthumbs.db
 Thumbs.db
+
+# Local rulesets (for manual import to GitHub)
+rulesets-local/

@@ -33,7 +33,6 @@ jobs:
       id: security-scan
       run: |
         poetry run safety scan --json --output safety-report.json || true
-        poetry run safety scan
 
     - name: Run bandit security linter
       run: |

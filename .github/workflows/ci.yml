@@ -43,15 +43,18 @@ jobs:
       run: poetry install --no-interaction
 
     - name: Run linting
+      id: lint
       run: |
         poetry run flake8 app tests
         poetry run black --check app tests
         poetry run isort --check-only app tests
 
     - name: Run type checking
+      id: type-check
       run: poetry run mypy app
 
     - name: Run tests
+      id: test
       run: poetry run pytest tests/ -v
 
   docker:
@@ -66,6 +69,7 @@ jobs:
       uses: docker/setup-buildx-action@v3
 
     - name: Build Docker image
+      id: docker-build
       run: docker build -t iic3964-backend:latest .
 
     - name: Test Docker image

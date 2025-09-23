@@ -1,3 +1,10 @@
-[bandit]
-exclude_dirs = tests,venv,.venv,__pycache__,.pytest_cache,.mypy_cache
-skips = B101,B601
+exclude_dirs:
+  - tests
+  - venv
+  - .venv
+  - __pycache__
+  - .pytest_cache
+  - .mypy_cache
+skips:
+  - B101
+  - B601

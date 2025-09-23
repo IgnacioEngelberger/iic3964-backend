@@ -10,7 +10,7 @@
 review:
   # Enable basic reviews (free plan compatible)
   enabled: true
-  
+
   # Free plan 2025 limitations
   # Note: Detailed line-by-line reviews not available in free plan
   # Only PR summarization and IDE reviews are available
@@ -46,12 +46,12 @@ languages:
   python:
     # Python-specific review settings
     enabled: true
-    
+
     # Note: Free plan 2025 only provides basic summarization
     # Detailed language-specific checks are not available
     # Only PR summarization and IDE reviews work
     checks: []  # Empty for free plan
-    
+
     # Framework checks not available in free plan
     frameworks: []  # Empty for free plan
 
@@ -80,7 +80,7 @@ languages:
 # Security settings (Free Plan 2025 Compatible)
 security:
   enabled: false  # Disabled for free plan 2025
-  
+
   # Note: Security analysis is not available in free plan 2025
   # Only PR summarization and IDE reviews are available
   # checks: []  # Not available in free plan
@@ -88,7 +88,7 @@ security:
 # Performance settings (Not Available in Free Plan 2025)
 performance:
   enabled: false  # Disabled for free plan 2025
-  
+
   # Note: Performance analysis is not available in free plan 2025
   # Only PR summarization and IDE reviews are available
 
@@ -153,19 +153,19 @@ custom_rules:
 behavior:
   # Comment on pull requests (PR summarization only)
   comment_on_pr: true
-  
+
   # Create issues for critical problems (not available in free plan)
   create_issues: false  # Not available in free plan 2025
-  
+
   # Suggest improvements (not available in free plan)
   suggest_improvements: false  # Not available in free plan 2025
-  
+
   # Explain complex code (not available in free plan)
   explain_complex_code: false  # Not available in free plan 2025
-  
+
   # Check for breaking changes (not available in free plan)
   check_breaking_changes: false  # Not available in free plan 2025
-  
+
   # Review documentation (not available in free plan)
   review_documentation: false  # Not available in free plan 2025
 

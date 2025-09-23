@@ -37,7 +37,7 @@ exclude_patterns:
 behavior:
   # PR summarization (main feature of free plan)
   comment_on_pr: true
-  
+
   # Everything else is not available in free plan 2025
   create_issues: false
   suggest_improvements: false

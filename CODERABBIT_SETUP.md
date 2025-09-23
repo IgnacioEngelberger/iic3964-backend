@@ -3,22 +3,24 @@
 ## Overview
 This project is configured with CodeRabbit for automated code review. CodeRabbit will automatically review your pull requests and provide intelligent feedback on code quality, security, performance, and best practices.
 
-## What CodeRabbit Does
+## What CodeRabbit Does (Free Plan 2025)
 
-### Automated Code Review
-- **Security Analysis**: Detects potential security vulnerabilities
-- **Performance Optimization**: Identifies performance bottlenecks
-- **Code Quality**: Checks for best practices and code standards
-- **Documentation**: Ensures proper documentation and comments
-- **Testing**: Validates test coverage and quality
-- **Dependencies**: Monitors for outdated or vulnerable dependencies
+### Available Features (Free Plan)
+- **Pull Request Summarization**: Provides summaries for each pull request
+- **IDE Reviews**: Allows code reviews directly within your IDE
+- **Basic AI Interaction**: Limited AI features for PR summaries and initial feedback
+- **Unlimited Repositories**: Supports reviews on unlimited public and private repositories
 
-### Framework-Specific Reviews
-- **FastAPI**: Reviews API endpoints, dependencies, and patterns
-- **Pydantic**: Validates model definitions and validation rules
-- **SQLAlchemy**: Checks database models and query patterns
-- **Docker**: Reviews containerization best practices
-- **CI/CD**: Validates GitHub Actions workflows
+### NOT Available in Free Plan 2025
+- **Detailed Line-by-Line Reviews**: Not available in free plan
+- **Security Analysis**: Not available in free plan
+- **Performance Optimization**: Not available in free plan
+- **Code Quality Checks**: Not available in free plan
+- **Framework-Specific Reviews**: Not available in free plan
+- **Customizable Learnings**: Not available in free plan
+- **Real-time Web Queries**: Not available in free plan
+- **Code Graph Analysis**: Not available in free plan
+- **Integration with Linters/SAST**: Not available in free plan
 
 ## Configuration Files
 
@@ -75,31 +77,22 @@ Files and patterns to ignore during review:
 3. Check for comments and suggestions
 4. Verify status checks are working
 
-## Features Enabled
+## Features Enabled (Free Plan 2025)
 
 ### Pull Request Reviews
-- Automatic review on every PR
-- Detailed feedback on code changes
-- Security vulnerability detection
-- Performance optimization suggestions
-- Code quality improvements
+- **PR Summarization**: Automatic summaries for each pull request
+- **Basic Feedback**: Limited feedback on code changes
+- **IDE Integration**: Reviews available directly in your IDE
 
-### Issue Creation
-- Automatic issues for critical problems
-- Security vulnerability tracking
-- Performance issue monitoring
-- Dependency update notifications
-
-### Status Checks
-- Integration with GitHub status checks
-- Required checks for PR merging
-- Quality gate enforcement
-
-### Comments and Suggestions
-- Inline code comments
-- Improvement suggestions
-- Best practice recommendations
-- Security warnings
+### NOT Available in Free Plan
+- **Detailed Line-by-Line Reviews**: Not available
+- **Security Vulnerability Detection**: Not available
+- **Performance Optimization Suggestions**: Not available
+- **Code Quality Improvements**: Not available
+- **Issue Creation**: Not available
+- **Status Checks**: Not available
+- **Inline Comments**: Not available
+- **Improvement Suggestions**: Not available
 
 ## Customization
 

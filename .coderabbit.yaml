@@ -79,17 +79,17 @@ languages:
 
 # Security settings (Free Plan 2025 Compatible)
 security:
-  enabled: false  # Disabled for free plan 2025
+  enabled: true  # Enabled to ensure security checks run if available
 
-  # Note: Security analysis is not available in free plan 2025
+  # Note: Security analysis may not be available in free plan 2025, but enabling ensures checks run if supported
   # Only PR summarization and IDE reviews are available
   # checks: []  # Not available in free plan
 
 # Performance settings (Not Available in Free Plan 2025)
 performance:
-  enabled: false  # Disabled for free plan 2025
+  enabled: true  # Enabled to ensure performance checks run if available
 
-  # Note: Performance analysis is not available in free plan 2025
+  # Note: Performance analysis may not be available in free plan 2025, but enabling ensures checks run if supported
   # Only PR summarization and IDE reviews are available
 
 # Documentation settings

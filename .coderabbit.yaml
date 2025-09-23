@@ -19,8 +19,8 @@ reviews:
   # Note: Detailed line-by-line reviews not available in free plan
   # Only PR summarization and IDE reviews are available
 
-  # Review all file types
-  include_patterns:
+  # Path filters
+  path_filters:
     - "**/*.py"
     - "**/*.yml"
     - "**/*.yaml"
@@ -31,20 +31,16 @@ reviews:
     - "**/*.dockerfile"
     - "**/Dockerfile"
     - "**/*.sql"
-
-  # Exclude patterns
-  exclude_patterns:
-    - "**/node_modules/**"
-    - "**/.venv/**"
-    - "**/venv/**"
-    - "**/__pycache__/**"
-    - "**/*.pyc"
-    - "**/.pytest_cache/**"
-    - "**/.mypy_cache/**"
-    - "**/poetry.lock"
-    - "**/package-lock.json"
-    - "**/yarn.lock"
-
+    - "!**/node_modules/**"
+    - "!**/.venv/**"
+    - "!**/venv/**"
+    - "!**/__pycache__/**"
+    - "!**/*.pyc"
+    - "!**/.pytest_cache/**"
+    - "!**/.mypy_cache/**"
+    - "!**/poetry.lock"
+    - "!**/package-lock.json"
+    - "!**/yarn.lock"
 # Language-specific settings (Free Plan 2025 Compatible)
 languages:
   python:

@@ -58,7 +58,6 @@ languages:
     checks: []  # Empty for free plan
 
     # Framework checks not available in free plan
-    frameworks: []  # Empty for free plan
 
   yaml:
     enabled: true

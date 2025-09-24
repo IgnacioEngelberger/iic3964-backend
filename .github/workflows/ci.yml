@@ -128,7 +128,15 @@ jobs:
     - name: Test Docker image
       run: |
         docker run -d --name test-container -p 8000:8000 iic3964-backend:latest
-        sleep 10
-        curl -f http://localhost:8000/health || exit 1
+        echo "Waiting for container to start..."
+        sleep 15
+        echo "Checking container status..."
+        docker ps
+        echo "Checking container logs..."
+        docker logs test-container
+        echo "Testing health endpoint..."
+        curl -f http://localhost:8000/health || (echo "Health check failed, retrying..." && sleep 5 && curl -f http://localhost:8000/health)
+        echo "Testing root endpoint..."
+        curl -f http://localhost:8000/ || (echo "Root endpoint failed, retrying..." && sleep 5 && curl -f http://localhost:8000/)
         docker stop test-container
         docker rm test-container

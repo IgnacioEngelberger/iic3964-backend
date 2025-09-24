@@ -35,9 +35,7 @@ jobs:
 
     - name: Run safety scan
       id: security-scan
-      run: |
-        poetry run safety scan --json > safety-report.json
-        poetry run safety scan
+      run: poetry run safety scan
 
     - name: Run bandit security linter
       run: poetry run bandit -r app/ -f json -o bandit-report.json
@@ -55,6 +53,4 @@ jobs:
       if: always()
       with:
         name: security-reports
-        path: |
-          safety-report.json
-          bandit-report.json
+        path: bandit-report.json

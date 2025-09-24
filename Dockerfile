@@ -2,10 +2,7 @@ FROM python:3.12-slim
 
 # Set environment variables
 ENV PYTHONDONTWRITEBYTECODE=1 \
-    PYTHONUNBUFFERED=1 \
-    POETRY_NO_INTERACTION=1 \
-    POETRY_VENV_IN_PROJECT=1 \
-    POETRY_CACHE_DIR=/tmp/poetry_cache
+    PYTHONUNBUFFERED=1
 
 # Set work directory
 WORKDIR /app
@@ -17,16 +14,9 @@ RUN apt-get update \
         curl \
     && rm -rf /var/lib/apt/lists/*
 
-# Install Poetry
-RUN pip install poetry==1.7.1
-
-# Copy Poetry files
-COPY pyproject.toml poetry.lock* ./
-
-# Install dependencies and create symlink to uvicorn
-RUN poetry install --only=main && rm -rf $POETRY_CACHE_DIR \
-    && poetry run pip install uvicorn[standard] \
-    && ln -s $(poetry run which uvicorn) /usr/local/bin/uvicorn
+# Copy requirements and install dependencies directly
+COPY pyproject.toml ./
+RUN pip install --no-cache-dir fastapi uvicorn[standard] pydantic pydantic-settings sqlalchemy alembic psycopg2-binary python-multipart python-jose[cryptography] passlib[bcrypt] supabase
 
 # Copy application
 COPY . .

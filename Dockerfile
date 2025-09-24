@@ -2,7 +2,10 @@ FROM python:3.12-slim
 
 # Set environment variables
 ENV PYTHONDONTWRITEBYTECODE=1 \
-    PYTHONUNBUFFERED=1
+    PYTHONUNBUFFERED=1 \
+    POETRY_NO_INTERACTION=1 \
+    POETRY_VENV_IN_PROJECT=1 \
+    POETRY_CACHE_DIR=/tmp/poetry_cache
 
 # Set work directory
 WORKDIR /app
@@ -14,9 +17,16 @@ RUN apt-get update \
         curl \
     && rm -rf /var/lib/apt/lists/*
 
-# Copy requirements and install dependencies directly
-COPY pyproject.toml ./
-RUN pip install --no-cache-dir fastapi uvicorn[standard] pydantic pydantic-settings sqlalchemy alembic psycopg2-binary python-multipart python-jose[cryptography] passlib[bcrypt] supabase
+# Install Poetry
+RUN pip install poetry==1.7.1
+
+# Copy Poetry files
+COPY pyproject.toml poetry.lock* ./
+
+# Configure Poetry and install dependencies
+RUN poetry config virtualenvs.create false \
+    && poetry install --only=main \
+    && rm -rf $POETRY_CACHE_DIR
 
 # Copy application
 COPY . .

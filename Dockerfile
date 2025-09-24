@@ -24,7 +24,10 @@ RUN pip install poetry==1.7.1
 COPY pyproject.toml poetry.lock* ./
 
 # Install dependencies
-RUN poetry install --no-dev && rm -rf $POETRY_CACHE_DIR
+RUN poetry install --only=main && rm -rf $POETRY_CACHE_DIR
+
+# Verify uvicorn is installed
+RUN poetry run uvicorn --version
 
 # Copy application
 COPY . .

@@ -23,11 +23,10 @@ RUN pip install poetry==1.7.1
 # Copy Poetry files
 COPY pyproject.toml poetry.lock* ./
 
-# Install dependencies
-RUN poetry install --only=main && rm -rf $POETRY_CACHE_DIR
-
-# Verify installation
-RUN poetry show uvicorn
+# Install dependencies and create symlink to uvicorn
+RUN poetry install --only=main && rm -rf $POETRY_CACHE_DIR \
+    && poetry run pip install uvicorn[standard] \
+    && ln -s $(poetry run which uvicorn) /usr/local/bin/uvicorn
 
 # Copy application
 COPY . .
@@ -44,4 +43,4 @@ HEALTHCHECK --interval=30s --timeout=30s --start-period=5s --retries=3 \
     CMD curl -f http://localhost:8000/health || exit 1
 
 # Run the application
-CMD ["poetry", "run", "uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000"]
+CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000"]

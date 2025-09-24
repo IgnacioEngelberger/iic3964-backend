@@ -1,0 +1,42 @@
+# CodeOwners file for IIC3964 Backend
+# This file defines who is responsible for different parts of the codebase
+
+# Global owners - responsible for the entire repository
+* @IgnacioEngelberger
+
+# Core application code
+/app/ @IgnacioEngelberger
+
+# API endpoints
+/app/api/ @IgnacioEngelberger
+
+# Database models and schemas
+/app/models/ @IgnacioEngelberger
+/app/schemas/ @IgnacioEngelberger
+
+# Core configuration
+/app/core/ @IgnacioEngelberger
+
+# Tests
+/tests/ @IgnacioEngelberger
+
+# Configuration files
+pyproject.toml @IgnacioEngelberger
+Dockerfile @IgnacioEngelberger
+docker-compose.yml @IgnacioEngelberger
+docker-compose.prod.yml @IgnacioEngelberger
+
+# CI/CD
+/.github/ @IgnacioEngelberger
+
+# Documentation
+README.md @IgnacioEngelberger
+*.md @IgnacioEngelberger
+
+# Scripts
+/scripts/ @IgnacioEngelberger
+Makefile @IgnacioEngelberger
+
+# CodeRabbit configuration
+/.coderabbit/ @IgnacioEngelberger
+.coderabbit.yaml @IgnacioEngelberger

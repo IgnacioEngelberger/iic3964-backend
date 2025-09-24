@@ -1,0 +1,128 @@
+# CodeRabbit Ignore File
+# Files and patterns to ignore during code review
+
+# Dependencies and lock files
+poetry.lock
+package-lock.json
+yarn.lock
+Pipfile.lock
+
+# Virtual environments
+.venv/
+venv/
+env/
+ENV/
+
+# Python cache
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+*.so
+
+# Testing
+.pytest_cache/
+.coverage
+htmlcov/
+.tox/
+.nox/
+
+# IDE and editor files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Logs
+*.log
+logs/
+
+# Database files
+*.db
+*.sqlite
+*.sqlite3
+
+# Temporary files
+*.tmp
+*.temp
+.cache/
+
+# Build artifacts
+build/
+dist/
+*.egg-info/
+
+# Documentation build
+docs/_build/
+
+# MyPy cache
+.mypy_cache/
+.dmypy.json
+dmypy.json
+
+# Coverage reports
+coverage.xml
+*.cover
+.hypothesis/
+
+# Jupyter Notebook checkpoints
+.ipynb_checkpoints/
+
+# Environment files - REMOVED to allow CodeRabbit to scan for leaked secrets
+# .env files should be reviewed by CodeRabbit to detect potential security issues
+# Keep them in .gitignore for local developer workflows
+
+# Docker volumes
+postgres_data/
+redis_data/
+
+# Generated files
+*.generated.*
+*.auto.*
+
+# Large files that don't need review
+*.zip
+*.tar.gz
+*.rar
+*.7z
+
+# Binary files
+*.exe
+*.dll
+*.so
+*.dylib
+*.bin
+
+# Media files
+*.jpg
+*.jpeg
+*.png
+*.gif
+*.svg
+*.ico
+*.mp4
+*.avi
+*.mov
+*.wav
+*.mp3
+
+# Fonts
+*.ttf
+*.otf
+*.woff
+*.woff2
+
+# Local rulesets (for manual import to GitHub)
+# Keep parity with .gitignore
+rulesets-local/

@@ -1,0 +1,65 @@
+# CodeRabbit Configuration for IIC3964 Backend - FREE PLAN 2025
+# This is a simplified configuration for the free plan which only provides:
+# - Pull Request Summarization
+# - IDE Reviews
+# - Basic AI interaction
+# - Usage limits on files and conversations per hour
+
+# Global settings
+review:
+  enabled: true
+
+# Include patterns for files to review
+include_patterns:
+  - "**/*.py"
+  - "**/*.yml"
+  - "**/*.yaml"
+  - "**/*.json"
+  - "**/*.md"
+  - "**/*.toml"
+  - "**/*.sh"
+  - "**/Dockerfile"
+
+# Exclude patterns
+exclude_patterns:
+  - "**/node_modules/**"
+  - "**/.venv/**"
+  - "**/venv/**"
+  - "**/__pycache__/**"
+  - "**/*.pyc"
+  - "**/.pytest_cache/**"
+  - "**/.mypy_cache/**"
+  - "**/poetry.lock"
+  - "**/package-lock.json"
+  - "**/yarn.lock"
+
+# Basic behavior (only what's available in free plan)
+behavior:
+  # PR summarization (main feature of free plan)
+  comment_on_pr: true
+
+  # Everything else is not available in free plan 2025
+  create_issues: false
+  suggest_improvements: false
+  explain_complex_code: false
+  check_breaking_changes: false
+  review_documentation: false
+
+# Integration settings
+integrations:
+  github:
+    enabled: true
+    status_checks: true
+    comment_on_commits: false
+    review_pull_requests: true
+    review_issues: false
+
+# Note: Most advanced features are not available in free plan 2025:
+# - Detailed line-by-line reviews
+# - Customizable learnings
+# - Real-time web queries
+# - Code graph analysis
+# - Integration with linters and SAST tools
+# - Advanced security analysis
+# - Performance analysis
+# - Framework-specific checks

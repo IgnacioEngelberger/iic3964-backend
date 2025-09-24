@@ -1,0 +1,185 @@
+# CodeRabbit Configuration for IIC3964 Backend
+# This file configures automated code review settings for FREE PLAN 2025
+# Note: Free plan 2025 only provides:
+# - Pull Request Summarization
+# - IDE Reviews
+# - Basic AI interaction
+# - Usage limits on files and conversations per hour
+
+# Global settings
+reviews:
+  # Automatic code review (free plan compatible)
+  auto_review:
+    enabled: true
+  # Surface review + commit status in PRs
+  review_status: true
+  commit_status: true
+  profile: chill
+  # Free plan 2025 limitations
+  # Note: Detailed line-by-line reviews not available in free plan
+  # Only PR summarization and IDE reviews are available
+
+  # GitHub integration tools
+  tools:
+    github-checks:
+      enabled: true
+
+  # Path filters
+  path_filters:
+    - "**/*.py"
+    - "**/*.yml"
+    - "**/*.yaml"
+    - "**/*.json"
+    - "**/*.md"
+    - "**/*.toml"
+    - "**/*.sh"
+    - "**/*.dockerfile"
+    - "**/Dockerfile"
+    - "**/*.sql"
+    - "!**/node_modules/**"
+    - "!**/.venv/**"
+    - "!**/venv/**"
+    - "!**/__pycache__/**"
+    - "!**/*.pyc"
+    - "!**/.pytest_cache/**"
+    - "!**/.mypy_cache/**"
+    - "!**/poetry.lock"
+    - "!**/package-lock.json"
+    - "!**/yarn.lock"
+# Language-specific settings (Free Plan 2025 Compatible)
+languages:
+  python:
+    # Python-specific review settings
+    enabled: true
+
+    # Note: Free plan 2025 only provides basic summarization
+    # Detailed language-specific checks are not available
+    # Only PR summarization and IDE reviews work
+    checks: []  # Empty for free plan
+
+    # Framework checks not available in free plan
+
+  yaml:
+    enabled: true
+    checks:
+      - "syntax"
+      - "best_practices"
+      - "security"
+
+  dockerfile:
+    enabled: true
+    checks:
+      - "security"
+      - "best_practices"
+      - "performance"
+      - "multi_stage"
+
+  shell:
+    enabled: true
+    checks:
+      - "security"
+      - "best_practices"
+      - "portability"
+
+# Security settings (Free Plan 2025 Compatible)
+security:
+  enabled: true  # Enabled to ensure security checks run if available
+
+  # Note: Security analysis may not be available in free plan 2025, but enabling ensures checks run if supported
+  # Only PR summarization and IDE reviews are available
+  # checks: []  # Not available in free plan
+
+# Performance settings (Not Available in Free Plan 2025)
+performance:
+  enabled: true  # Enabled to ensure performance checks run if available
+
+  # Note: Performance analysis may not be available in free plan 2025, but enabling ensures checks run if supported
+  # Only PR summarization and IDE reviews are available
+
+# Documentation settings
+documentation:
+  enabled: true
+
+  # Check documentation quality
+  checks:
+    - "docstrings"
+    - "readme"
+    - "api_docs"
+    - "comments"
+    - "type_hints"
+
+# Testing settings
+testing:
+  enabled: true
+
+  # Check test quality
+  checks:
+    - "test_coverage"
+    - "test_quality"
+    - "test_patterns"
+    - "fixtures"
+    - "assertions"
+
+# CI/CD settings
+ci_cd:
+  enabled: true
+
+  # Check CI/CD configuration
+  checks:
+    - "workflow_syntax"
+    - "security_practices"
+    - "best_practices"
+    - "dependencies"
+
+# Custom rules for this project
+custom_rules:
+  # FastAPI specific rules
+  fastapi:
+    - "Check for proper dependency injection"
+    - "Verify response models are defined"
+    - "Check for proper error handling"
+    - "Verify async/await usage"
+
+  # Database specific rules
+  database:
+    - "Check for SQL injection vulnerabilities"
+    - "Verify proper connection handling"
+    - "Check for proper transaction management"
+
+  # Docker specific rules
+  docker:
+    - "Check for security best practices"
+    - "Verify multi-stage builds"
+    - "Check for proper user permissions"
+    - "Verify health checks"
+
+# Review behavior (Free Plan 2025 Compatible)
+behavior:
+  # Comment on pull requests (PR summarization only)
+  comment_on_pr: true
+
+  # Create issues for critical problems (not available in free plan)
+  create_issues: false  # Not available in free plan 2025
+
+  # Suggest improvements (not available in free plan)
+  suggest_improvements: false  # Not available in free plan 2025
+
+  # Explain complex code (not available in free plan)
+  explain_complex_code: false  # Not available in free plan 2025
+
+  # Check for breaking changes (not available in free plan)
+  check_breaking_changes: false  # Not available in free plan 2025
+
+  # Review documentation (not available in free plan)
+  review_documentation: false  # Not available in free plan 2025
+
+# Notification settings
+notifications:
+  # Notify on critical issues
+  critical_issues: true
+
+  # Notify on security issues
+  security_issues: true
+
+  # Notify on performance issues
+  performance_issues: true

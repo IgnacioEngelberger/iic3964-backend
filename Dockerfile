@@ -26,8 +26,8 @@ COPY pyproject.toml poetry.lock* ./
 # Install dependencies
 RUN poetry install --only=main && rm -rf $POETRY_CACHE_DIR
 
-# Verify uvicorn is installed
-RUN poetry run uvicorn --version
+# Verify installation
+RUN poetry show uvicorn
 
 # Copy application
 COPY . .

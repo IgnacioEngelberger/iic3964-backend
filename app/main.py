@@ -1,4 +1,4 @@
-from fastapi import FastAPI, Query, Body
+from fastapi import Body, FastAPI, Query
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 
@@ -33,6 +33,7 @@ async def root() -> dict:
 @app.get("/health")
 async def health_check() -> dict:
     return {"status": "healthy"}
+
 
 # Endpoints Sprint 1 hardcodeados
 

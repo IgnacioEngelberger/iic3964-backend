@@ -44,7 +44,7 @@ async def get_users(
     limit: int = Query(10, ge=1, le=50),
     sort: str = Query("createdAt"),
     order: str = Query("desc", regex="^(asc|desc)$"),
-):
+) -> JSONResponse:
     all_users = [
         {"id": i, "name": f"Usuario {i}", "email": f"usuario{i}@test.com"}
         for i in range(1, 106)
@@ -82,7 +82,7 @@ async def get_users(
 
 
 @app.post("/api/v1/check-urgency")
-async def check_urgency(dx: str = Body(..., embed=True)):
+async def check_urgency(dx: str = Body(..., embed=True)) -> JSONResponse:
     if dx not in KNOWN_DX:
         return JSONResponse(
             content={"error": "Diagnóstico no reconocido"},

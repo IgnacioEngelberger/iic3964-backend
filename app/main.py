@@ -36,6 +36,7 @@ async def health_check() -> dict:
 
 # Endpoints Sprint 1 hardcodeados
 
+
 @app.get("/api/v1/users")
 async def get_users(
     page: int = Query(1, ge=1),
@@ -77,6 +78,7 @@ async def get_users(
     )
 
     return response
+
 
 @app.post("/api/v1/check-urgency")
 async def check_urgency(dx: str = Body(..., embed=True)):

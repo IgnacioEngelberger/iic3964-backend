@@ -10,13 +10,13 @@ class PatientInfo(BaseModel):
     last_name: str | None
 
 class DoctorInfo(BaseModel):
-    first_name: str | None
-    last_name: str | None
+    first_name: Optional[str] = None
+    last_name: Optional[str] = None
 
 class ClinicalAttentionListItem(BaseModel):
     id: UUID
-    created_at: datetime
-    updated_at: datetime
+    created_at: Optional[datetime] = None
+    updated_at: Optional[datetime] = None
     patient: PatientInfo
     resident_doctor: DoctorInfo
     supervisor_doctor: DoctorInfo

@@ -26,7 +26,6 @@ def list_attentions(page: int, page_size: int, search: str | None, order: str | 
         )
 
         query = supabase.table("ClinicalAttention").select(select_query)
-        query = query.eq("is_deleted", False)
 
         search_filter = None
         if search:

@@ -1,25 +1,31 @@
-from app.core.supabase_client import supabase
 import uuid
-from uuid import UUID
 from datetime import datetime
+from uuid import UUID
+
 from fastapi import HTTPException
+
+from app.core.supabase_client import supabase
 from app.schemas.clinical_attention import (
-    ClinicalAttentionListItem, 
-    PatientInfo, 
-    DoctorInfo,
-    CreateClinicalAttentionRequest,
-    UpdateClinicalAttentionRequest,
     ClinicalAttentionDetailResponse,
-    PatientDetail,
-    DoctorDetail,
+    ClinicalAttentionListItem,
+    CreateClinicalAttentionRequest,
     DeletedBy,
+    DoctorDetail,
+    DoctorInfo,
     OverwrittenBy,
+    PatientDetail,
+    PatientInfo,
+    UpdateClinicalAttentionRequest,
 )
 
-def list_attentions(page: int, page_size: int, search: str | None, order: str | None) -> dict:
+
+def list_attentions(
+    page: int, page_size: int, search: str | None, order: str | None
+) -> dict:
     try:
         select_query = (
-            "id, created_at, updated_at, applies_urgency_law, ai_result, diagnostic, overwritten_by_id, "
+            "id, created_at, updated_at, applies_urgency_law, ai_result, "
+            "diagnostic, overwritten_by_id, "
             "patient:patient_id(rut, first_name, last_name), "
             "resident_doctor:resident_doctor_id(first_name, last_name), "
             "supervisor_doctor:supervisor_doctor_id(first_name, last_name)"
@@ -38,11 +44,11 @@ def list_attentions(page: int, page_size: int, search: str | None, order: str | 
             query = query.filter(f"or({search_filter})")
 
         if order:
-            order_fields = order.split(',')
+            order_fields = order.split(",")
             for field in order_fields:
-                col_name = field.lstrip('-')
-                ascending = not field.startswith('-')
-                if '.' not in col_name:
+                col_name = field.lstrip("-")
+                ascending = not field.startswith("-")
+                if "." not in col_name:
                     query = query.order(col_name, desc=not ascending)
         else:
             query = query.order("created_at", desc=True)
@@ -77,7 +83,7 @@ def list_attentions(page: int, page_size: int, search: str | None, order: str | 
                     is_overwritten=(item.get("overwritten_by_id") is not None),
                     patient=PatientInfo(**patient_data),
                     resident_doctor=DoctorInfo(**resident_data),
-                    supervisor_doctor=DoctorInfo(**supervisor_data)
+                    supervisor_doctor=DoctorInfo(**supervisor_data),
                 )
             )
 
@@ -85,23 +91,28 @@ def list_attentions(page: int, page_size: int, search: str | None, order: str | 
             "count": total_count,
             "page": page,
             "page_size": page_size,
-            "results": results_list
+            "results": results_list,
         }
 
     except Exception as e:
         print(f"Error en el servicio: {e}")
         raise
 
+
 def get_attention_detail(attention_id: UUID) -> ClinicalAttentionDetailResponse:
     try:
         select_query = (
             "id, created_at, updated_at, "
-            "is_deleted, deleted_at, deleted_by:deleted_by_id(id, first_name, last_name), "
-            "overwritten_reason, overwritten_by:overwritten_by_id(id, first_name, last_name), "
+            "is_deleted, deleted_at, "
+            "deleted_by:deleted_by_id(id, first_name, last_name), "
+            "overwritten_reason, "
+            "overwritten_by:overwritten_by_id(id, first_name, last_name), "
             "ai_result, ai_reason, applies_urgency_law, diagnostic, "
             "patient:patient_id(id, rut, first_name, last_name, email), "
-            "resident_doctor:resident_doctor_id(id, first_name, last_name, email, phone), "
-            "supervisor_doctor:supervisor_doctor_id(id, first_name, last_name, email, phone)"
+            "resident_doctor:resident_doctor_id("
+            "id, first_name, last_name, email, phone), "
+            "supervisor_doctor:supervisor_doctor_id("
+            "id, first_name, last_name, email, phone)"
         )
 
         response = (
@@ -116,7 +127,7 @@ def get_attention_detail(attention_id: UUID) -> ClinicalAttentionDetailResponse:
         item = response.data[0]
 
         def safe_dict(data: dict | None):
-          return data if data else None
+            return data if data else None
 
         deleted_by_data = safe_dict(item.get("deleted_by"))
         overwritten_by_data = safe_dict(item.get("overwritten_by"))
@@ -131,10 +142,14 @@ def get_attention_detail(attention_id: UUID) -> ClinicalAttentionDetailResponse:
             is_deleted=bool(item.get("is_deleted", False)),
             deleted_at=item.get("deleted_at"),
             deleted_by=DeletedBy(**deleted_by_data) if deleted_by_data else None,
-            overwritten_by=OverwrittenBy(**overwritten_by_data) if overwritten_by_data else None,
+            overwritten_by=OverwrittenBy(**overwritten_by_data)
+            if overwritten_by_data
+            else None,
             patient=PatientDetail(**patient_data) if patient_data else None,
             resident_doctor=DoctorDetail(**resident_data) if resident_data else None,
-            supervisor_doctor=DoctorDetail(**supervisor_data) if supervisor_data else None,
+            supervisor_doctor=DoctorDetail(**supervisor_data)
+            if supervisor_data
+            else None,
             overwritten_reason=item.get("overwritten_reason"),
             ai_result=item.get("ai_result"),
             ai_reason=item.get("ai_reason"),
@@ -148,38 +163,57 @@ def get_attention_detail(attention_id: UUID) -> ClinicalAttentionDetailResponse:
         print(f"Error en el servicio (detalle): {e}")
         raise
 
+
 def create_attention(payload: CreateClinicalAttentionRequest):
     try:
         if isinstance(payload.patient_id, dict):
             patient_data = payload.patient_id
             patient_id = str(uuid.uuid4())
-            patient_insert = supabase.table("Patient").insert({
-                "id": patient_id,
-                "rut": patient_data["rut"],
-                "first_name": patient_data["first_name"],
-                "last_name": patient_data["last_name"],
-                "email": patient_data["email"]
-            }).execute()
+            patient_insert = (
+                supabase.table("Patient")
+                .insert(
+                    {
+                        "id": patient_id,
+                        "rut": patient_data["rut"],
+                        "first_name": patient_data["first_name"],
+                        "last_name": patient_data["last_name"],
+                        "email": patient_data["email"],
+                    }
+                )
+                .execute()
+            )
 
             if not patient_insert.data:
-                raise HTTPException(status_code=400, detail="Error al crear el paciente")
+                raise HTTPException(
+                    status_code=400, detail="Error al crear el paciente"
+                )
         else:
             patient_id = str(payload.patient_id)
         attention_id = str(uuid.uuid4())
-        insert_result = supabase.table("ClinicalAttention").insert({
-          "id": attention_id,
-          "patient_id": patient_id,
-          "resident_doctor_id": str(payload.resident_doctor_id),
-          "supervisor_doctor_id": str(payload.supervisor_doctor_id) if payload.supervisor_doctor_id else None,
-          "overwritten_by_id": None,
-          "deleted_by_id": None,
-          "diagnostic": payload.diagnostic,
-          "ai_result": None,
-          "ai_reason": None
-      }).execute()
+        insert_result = (
+            supabase.table("ClinicalAttention")
+            .insert(
+                {
+                    "id": attention_id,
+                    "patient_id": patient_id,
+                    "resident_doctor_id": str(payload.resident_doctor_id),
+                    "supervisor_doctor_id": str(payload.supervisor_doctor_id)
+                    if payload.supervisor_doctor_id
+                    else None,
+                    "overwritten_by_id": None,
+                    "deleted_by_id": None,
+                    "diagnostic": payload.diagnostic,
+                    "ai_result": None,
+                    "ai_reason": None,
+                }
+            )
+            .execute()
+        )
 
         if not insert_result.data:
-            raise HTTPException(status_code=400, detail="Error al crear la atención clínica")
+            raise HTTPException(
+                status_code=400, detail="Error al crear la atención clínica"
+            )
         detail_result = get_attention_detail(attention_id)
         return detail_result
 
@@ -188,7 +222,8 @@ def create_attention(payload: CreateClinicalAttentionRequest):
     except Exception as e:
         print(f"Error en el servicio (create): {e}")
         raise HTTPException(status_code=500, detail=str(e))
-  
+
+
 def update_attention(attention_id: UUID, payload: UpdateClinicalAttentionRequest):
     try:
         attention_detail = get_attention_detail(attention_id)
@@ -197,13 +232,15 @@ def update_attention(attention_id: UUID, payload: UpdateClinicalAttentionRequest
         if payload.patient:
             if isinstance(payload.patient, dict):
                 new_patient_id = str(uuid.uuid4())
-                supabase.table("Patient").insert({
-                    "id": new_patient_id,
-                    "rut": payload.patient.rut,
-                    "first_name": payload.patient.first_name,
-                    "last_name": payload.patient.last_name,
-                    "email": payload.patient.email
-                }).execute()
+                supabase.table("Patient").insert(
+                    {
+                        "id": new_patient_id,
+                        "rut": payload.patient.rut,
+                        "first_name": payload.patient.first_name,
+                        "last_name": payload.patient.last_name,
+                        "email": payload.patient.email,
+                    }
+                ).execute()
                 update_data["patient_id"] = new_patient_id
             else:
                 update_data["patient_id"] = str(payload.patient)
@@ -217,7 +254,9 @@ def update_attention(attention_id: UUID, payload: UpdateClinicalAttentionRequest
         if not update_data:
             return attention_detail
 
-        supabase.table("ClinicalAttention").update(update_data).eq("id", str(attention_id)).execute()
+        supabase.table("ClinicalAttention").update(update_data).eq(
+            "id", str(attention_id)
+        ).execute()
 
         return get_attention_detail(attention_id)
 
@@ -225,22 +264,36 @@ def update_attention(attention_id: UUID, payload: UpdateClinicalAttentionRequest
         raise HTTPException(status_code=404, detail="Atención clínica no encontrada")
     except Exception as e:
         print(f"Error en el servicio (update): {e}")
-        raise HTTPException(status_code=500, detail="Error al actualizar la atención clínica")
-  
+        raise HTTPException(
+            status_code=500, detail="Error al actualizar la atención clínica"
+        )
+
+
 def delete_attention(attention_id: UUID, deleted_by_id: UUID):
     try:
         detail = get_attention_detail(attention_id)
         if not detail:
-            raise HTTPException(status_code=404, detail="Atención clínica no encontrada")
+            raise HTTPException(
+                status_code=404, detail="Atención clínica no encontrada"
+            )
 
-        response = supabase.table("ClinicalAttention").update({
-            "is_deleted": True,
-            "deleted_at": datetime.utcnow().isoformat(),
-            "deleted_by_id": str(deleted_by_id)
-        }).eq("id", str(attention_id)).execute()
+        response = (
+            supabase.table("ClinicalAttention")
+            .update(
+                {
+                    "is_deleted": True,
+                    "deleted_at": datetime.utcnow().isoformat(),
+                    "deleted_by_id": str(deleted_by_id),
+                }
+            )
+            .eq("id", str(attention_id))
+            .execute()
+        )
 
         if not response.data:
-            raise HTTPException(status_code=400, detail="No se pudo eliminar la atención clínica")
+            raise HTTPException(
+                status_code=400, detail="No se pudo eliminar la atención clínica"
+            )
 
         return None
     except Exception as e:

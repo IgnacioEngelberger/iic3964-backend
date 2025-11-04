@@ -102,6 +102,20 @@ class CreateClinicalAttentionRequest(BaseModel):
     resident_doctor_id: UUID
     supervisor_doctor_id: Optional[UUID] = None
     diagnostic: str
+    model_config = {
+        "json_schema_extra": {
+            "example": {
+                "patient_id": "6a6263f1-b13d-4143-84a8-9a74ded10174",
+                "resident_doctor_id": "392c3fe1-ee87-4bbb-ae46-d2733a84bf8f",
+                "supervisor_doctor_id": ("392c3fe1-ee87-4bbb-ae46-d2733a84bf8f"),
+                "diagnostic": (
+                    "Paciente consulta por dolor torácico opresivo irradiado a brazo "
+                    "izquierdo, acompañado de diaforesis y náuseas de inicio súbito "
+                    "hace 25 minutos. Antecedentes de hipertensión."
+                ),
+            }
+        }
+    }
 
 
 class UpdateClinicalAttentionRequest(BaseModel):

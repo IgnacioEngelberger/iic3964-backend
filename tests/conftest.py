@@ -2,9 +2,11 @@ import pytest
 from dotenv import load_dotenv
 from fastapi.testclient import TestClient
 
-from app.main import app
-
+# Load environment variables before importing the app
 load_dotenv(".env.test")
+
+# noqa: E402 → tells flake8 to ignore "import not at top of file"
+from app.main import app  # noqa: E402
 
 
 @pytest.fixture

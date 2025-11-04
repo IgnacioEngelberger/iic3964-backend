@@ -132,7 +132,7 @@ jobs:
 
     - name: Test Docker image
       run: |
-        docker run -d --name test-container \ 
+        docker run -d --name test-container \
           -e SUPABASE_URL="${SUPABASE_URL}" \
           -e SUPABASE_KEY="${SUPABASE_KEY}" \
           -p 8000:8000 iic3964-backend:latest 

@@ -109,6 +109,19 @@ def reason(text: str) -> UrgencyOutput:
     Send raw text about the patient to Gemini and return structured UrgencyOutput.
     The `text` should contain all info: symptoms, history, vitals, timeline, etc.
     """
+    api_key = getattr(settings, "GEMINI_API_KEY", None)
+    if api_key is None or "fake" in str(api_key).lower():
+        # Return deterministic mock output for CI
+        return UrgencyOutput(
+            urgency_flag="uncertain",
+            diagnosis_hypotheses=[
+                {"condition": "Mock diagnosis (CI mode)", "confidence": 0.0}
+            ],
+            rationale="AI disabled in CI – using mock result.",
+            actions=["No AI actions generated (CI mode)"],
+            citations=[],
+            citations_structured=[],
+        )
     if client is None:
         raise RuntimeError(
             "google-genai client is not available. Install 'google-genai' and "

@@ -108,6 +108,19 @@ def _coerce_to_schema(raw: Dict[str, Any]) -> Dict[str, Any]:
 
 def reason(case: Dict[str, Any]) -> UrgencyOutput:
     """Send case information to Gemini and return structured UrgencyOutput."""
+    api_key = getattr(settings, "GEMINI_API_KEY", None)
+    if api_key is None or "fake" in str(api_key).lower():
+        # Return deterministic mock output for CI
+        return UrgencyOutput(
+            urgency_flag="uncertain",
+            diagnosis_hypotheses=[
+                {"condition": "Mock diagnosis (CI mode)", "confidence": 0.0}
+            ],
+            rationale="AI disabled in CI – using mock result.",
+            actions=["No AI actions generated (CI mode)"],
+            citations=[],
+            citations_structured=[],
+        )
     if client is None:
         raise RuntimeError(
             "google-genai client is not available. Install 'google-genai' and "

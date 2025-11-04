@@ -1,9 +1,12 @@
-from typing import Any, Dict, List, Optional, Literal
+from typing import List, Literal, Optional
+
 from pydantic import BaseModel, Field
+
 
 class Dx(BaseModel):
     condition: str
     confidence: float = Field(ge=0, le=1)
+
 
 class CitationObj(BaseModel):
     label: Optional[str] = None
@@ -18,11 +21,12 @@ class UrgencyInput(BaseModel):
     All fields are strings so the prompt formatting is straightforward; many
     can be left empty or omitted if unknown.
     """
-    symptoms: str = Field(..., example="Dolor torácico intenso y sudoración profusa")
-    vitals: Optional[str] = Field(None, example="TA 90/60, FC 110, SatO2 96%")
-    age: Optional[str] = Field(None, example="67")
-    comorbidities: Optional[str] = Field(None, example="hipertensión, diabetes")
-    onset: Optional[str] = Field(None, example="2 horas")
+
+    symptoms: str = Field(..., examples=["Dolor torácico intenso y sudoración profusa"])
+    vitals: Optional[str] = Field(None, examples=["TA 90/60, FC 110, SatO2 96%"])
+    age: Optional[str] = Field(None, examples=["67"])
+    comorbidities: Optional[str] = Field(None, examples=["hipertensión, diabetes"])
+    onset: Optional[str] = Field(None, examples=["2 horas"])
 
     class Config:
         schema_extra = {
@@ -31,17 +35,18 @@ class UrgencyInput(BaseModel):
                 "vitals": "TA 90/60, FC 110, SatO2 96%",
                 "age": "67",
                 "comorbidities": "hipertensión, diabetes",
-                "onset": "2 horas"
+                "onset": "2 horas",
             }
         }
+
 
 class UrgencyOutput(BaseModel):
     urgency_flag: Literal["applies", "uncertain", "does_not_apply"]
     diagnosis_hypotheses: List[Dx]
     rationale: str
     actions: List[str]
-    citations: List[str] = []
-    citations_structured: List[CitationObj] = []
+    citations: List[str] = Field(default_factory=list)
+    citations_structured: List[CitationObj] = Field(default_factory=list)
 
     class Config:
         schema_extra = {
@@ -50,18 +55,21 @@ class UrgencyOutput(BaseModel):
                 "diagnosis_hypotheses": [],
                 "rationale": (
                     "El paciente presenta dolor torácico intenso, sudoración profusa, "
-                    "hipotensión (TA 90/60) y taquicardia (FC 110), con antecedentes de "
-                    "hipertensión y diabetes, y una evolución de 2 horas. Estos signos y "
-                    "síntomas son altamente sugerentes de un evento cardiovascular agudo "
-                    "grave, como un Infarto Agudo al Miocardio o una Disección Aórtica, "
-                    "los cuales constituyen un riesgo inminente de muerte o secuela "
-                    "funcional grave que requiere atención inmediata e impostergable. "
-                    "Por lo tanto, cumple con los criterios para la aplicación de la Ley "
-                    "de Urgencia en Chile."
+                    "hipotensión (TA 90/60) y taquicardia (FC 110), con antecedentes "
+                    "de hipertensión y diabetes, y una evolución de 2 horas. "
+                    "Estos signos y síntomas son altamente sugerentes de un evento "
+                    "cardiovascular agudo grave, como un Infarto Agudo al Miocardio "
+                    "o una Disección Aórtica, los cuales constituyen un riesgo "
+                    "inminente de muerte o secuela funcional grave que requiere "
+                    "atención inmediata e impostergable. Por lo tanto, cumple con "
+                    "los criterios para la aplicación de la Ley de Urgencia en Chile."
                 ),
                 "actions": [
                     "Activar Ley de Urgencia",
-                    "Solicitar traslado inmediato a un centro asistencial de alta complejidad",
+                    (
+                        "Solicitar traslado inmediato a un centro asistencial "
+                        "de alta complejidad"
+                    ),
                     "Estabilización inicial y evaluación médica de emergencia",
                 ],
                 "citations": [],

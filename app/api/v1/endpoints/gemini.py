@@ -1,12 +1,13 @@
 from fastapi import APIRouter, HTTPException
-from app.schemas.gemini import UrgencyInput, UrgencyOutput
+
 from app.IA import gamini as gemini_module
+from app.schemas.gemini import UrgencyInput, UrgencyOutput
 
 router = APIRouter()
 
 
 @router.post("/reason", response_model=UrgencyOutput)
-def reason(payload: UrgencyInput):
+def reason(payload: UrgencyInput) -> UrgencyOutput:
     """Evaluate urgency using Gemini.
 
     Expects a JSON body matching `UrgencyInput` and returns `UrgencyOutput`.

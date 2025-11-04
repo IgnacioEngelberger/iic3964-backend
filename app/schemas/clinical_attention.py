@@ -1,7 +1,8 @@
-from pydantic import BaseModel, EmailStr
-from uuid import UUID
 from datetime import datetime
 from typing import Optional, Union
+from uuid import UUID
+
+from pydantic import BaseModel, EmailStr
 
 
 class PatientInfo(BaseModel):
@@ -9,9 +10,11 @@ class PatientInfo(BaseModel):
     first_name: str | None
     last_name: str | None
 
+
 class DoctorInfo(BaseModel):
     first_name: Optional[str] = None
     last_name: Optional[str] = None
+
 
 class ClinicalAttentionListItem(BaseModel):
     id: UUID
@@ -27,26 +30,31 @@ class ClinicalAttentionListItem(BaseModel):
     class Config:
         from_attributes = True
 
+
 class ClinicalAttentionsListResponse(BaseModel):
     count: int
     page: int
     page_size: int
     results: list[ClinicalAttentionListItem]
 
+
 class _PersonBase(BaseModel):
     id: UUID
     first_name: str
     last_name: str
+
 
 class DeletedBy(BaseModel):
     id: UUID
     first_name: Optional[str]
     last_name: Optional[str]
 
+
 class OverwrittenBy(BaseModel):
     id: UUID
     first_name: Optional[str]
     last_name: Optional[str]
+
 
 class PatientDetail(BaseModel):
     id: UUID
@@ -55,12 +63,14 @@ class PatientDetail(BaseModel):
     last_name: Optional[str]
     email: Optional[str]
 
+
 class DoctorDetail(BaseModel):
     id: UUID
     first_name: Optional[str]
     last_name: Optional[str]
     email: Optional[str]
     phone: Optional[str]
+
 
 class ClinicalAttentionDetailResponse(BaseModel):
     id: UUID
@@ -79,11 +89,13 @@ class ClinicalAttentionDetailResponse(BaseModel):
     applies_urgency_law: Optional[bool]
     diagnostic: Optional[str]
 
+
 class NestedPatient(BaseModel):
     rut: str
     first_name: str
     last_name: str
     email: EmailStr
+
 
 class CreateClinicalAttentionRequest(BaseModel):
     patient_id: Union[UUID, NestedPatient]
@@ -91,11 +103,13 @@ class CreateClinicalAttentionRequest(BaseModel):
     supervisor_doctor_id: Optional[UUID] = None
     diagnostic: str
 
+
 class UpdateClinicalAttentionRequest(BaseModel):
     patient: Optional[Union[UUID, NestedPatient]] = None
     resident_doctor_id: Optional[UUID] = None
     diagnostic: Optional[str] = None
     is_deleted: Optional[bool] = None
+
 
 class DeleteClinicalAttentionRequest(BaseModel):
     deleted_by_id: UUID

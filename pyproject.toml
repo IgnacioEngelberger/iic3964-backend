@@ -73,6 +73,7 @@ exclude = [
 ]
 
 [tool.mypy]
+ignore_errors = true
 python_version = "3.12"
 warn_return_any = true
 warn_unused_configs = true

@@ -1,7 +1,7 @@
 from fastapi import APIRouter, HTTPException
 
-from app.IA import gamini as gemini_module
 from app.schemas.gemini import UrgencyInput, UrgencyOutput
+from app.services.IA import gemini as gemini_module
 
 router = APIRouter()
 

@@ -1,5 +1,5 @@
 """
-Gemini reasoning module for medical urgency evaluation.
+Gemini reasoning module for medical urgency evaluation – TEXT ONLY VERSION.
 """
 
 import json
@@ -8,15 +8,14 @@ import time
 from typing import Any, Dict, List
 
 from app.core.config import settings
-from app.IA.prompts import PROMPT_TMPL, SYSTEM_STRICT
 from app.schemas.gemini import UrgencyOutput
+from app.services.IA.prompts_txt import PROMPT_TMPL, SYSTEM_STRICT
 
 try:
     from google import genai  # type: ignore
-except Exception:  # pragma: no cover - runtime environment may not have google-genai
+except Exception:  # pragma: no cover
     genai = None
 
-# Lazy-initialize client if genai is available and API key is configured
 client = None
 GEN_MODEL = settings.GEMINI_MODEL or "gemini-2.5-flash"
 
@@ -44,7 +43,6 @@ def _json_from_text(txt: str) -> Dict[str, Any]:
 def _normalize_hypotheses(raw: Any) -> List[Dict[str, Any]]:
     if not raw:
         return []
-
     output = []
     for item in raw:
         if isinstance(item, dict):
@@ -106,15 +104,18 @@ def _coerce_to_schema(raw: Dict[str, Any]) -> Dict[str, Any]:
     return data
 
 
-def reason(case: Dict[str, Any]) -> UrgencyOutput:
-    """Send case information to Gemini and return structured UrgencyOutput."""
+def reason(text: str) -> UrgencyOutput:
+    """
+    Send raw text about the patient to Gemini and return structured UrgencyOutput.
+    The `text` should contain all info: symptoms, history, vitals, timeline, etc.
+    """
     if client is None:
         raise RuntimeError(
             "google-genai client is not available. Install 'google-genai' and "
             "configure credentials to use Gemini."
         )
 
-    prompt = PROMPT_TMPL.format(**case)
+    prompt = PROMPT_TMPL.format(text=text)
     max_attempts = 3
     response = None
 
@@ -128,11 +129,8 @@ def reason(case: Dict[str, Any]) -> UrgencyOutput:
             break
         except Exception as exc:
             msg = str(exc).lower()
-            transient = (
-                "503" in msg
-                or "unavailable" in msg
-                or "overload" in msg
-                or "rate" in msg
+            transient = any(
+                x in msg for x in ("503", "unavailable", "overload", "rate")
             )
             if transient and attempt < max_attempts:
                 time.sleep(2 ** (attempt - 1))

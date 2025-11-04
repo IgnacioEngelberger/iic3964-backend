@@ -1,7 +1,7 @@
 # app/api/v1/endpoints/clinical_attentions.py
 from uuid import UUID
 
-from fastapi import APIRouter, HTTPException, Path, Query
+from fastapi import APIRouter, BackgroundTasks, HTTPException, Path, Query
 
 from app.schemas.clinical_attention import (
     ClinicalAttentionDetailResponse,
@@ -61,9 +61,14 @@ def get_clinical_attention_detail(attention_id: UUID):
     response_model=ClinicalAttentionDetailResponse,
     tags=["Clinical Attentions"],
 )
-def create_clinical_attention(payload: CreateClinicalAttentionRequest):
+def create_clinical_attention(
+    payload: CreateClinicalAttentionRequest,
+    background_tasks: BackgroundTasks,
+) -> ClinicalAttentionDetailResponse:
     try:
-        created_attention = clinical_attention_service.create_attention(payload)
+        created_attention = clinical_attention_service.create_attention(
+            payload, background_tasks
+        )
         return created_attention
     except HTTPException as e:
         raise e

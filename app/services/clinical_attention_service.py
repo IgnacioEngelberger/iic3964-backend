@@ -231,10 +231,12 @@ def create_attention(
         raise HTTPException(status_code=500, detail=str(e))
 
 
-def update_attention(attention_id: UUID, payload: UpdateClinicalAttentionRequest):
+def update_attention(attention_id: UUID, 
+                     payload: UpdateClinicalAttentionRequest,
+                     background_tasks: BackgroundTasks):
     try:
         attention_detail = get_attention_detail(attention_id)
-
+        should_ai_reevaluate = False
         update_data = {}
         if payload.patient:
             if isinstance(payload.patient, dict):
@@ -253,8 +255,11 @@ def update_attention(attention_id: UUID, payload: UpdateClinicalAttentionRequest
                 update_data["patient_id"] = str(payload.patient)
         if payload.resident_doctor_id:
             update_data["resident_doctor_id"] = str(payload.resident_doctor_id)
-        if payload.diagnostic:
+        if payload.diagnostic is not None:
             update_data["diagnostic"] = payload.diagnostic
+            if payload.diagnostic != attention_detail.diagnostic:
+                should_ai_reevaluate = True
+
         if payload.is_deleted is not None:
             update_data["is_deleted"] = payload.is_deleted
 
@@ -264,7 +269,10 @@ def update_attention(attention_id: UUID, payload: UpdateClinicalAttentionRequest
         supabase.table("ClinicalAttention").update(update_data).eq(
             "id", str(attention_id)
         ).execute()
-
+        if should_ai_reevaluate:
+            background_tasks.add_task(
+                run_ai_reasoning_task, UUID(attention_id), payload.diagnostic
+            )
         return get_attention_detail(attention_id)
 
     except LookupError:

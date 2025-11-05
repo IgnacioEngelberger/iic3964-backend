@@ -86,12 +86,14 @@ def create_clinical_attention(
     tags=["Clinical Attentions"],
 )
 def patch_clinical_attention(
+    background_tasks: BackgroundTasks,
     attention_id: UUID = Path(..., description="ID de la atención clínica"),
     payload: UpdateClinicalAttentionRequest = None,
+    
 ):
     try:
         updated_attention = clinical_attention_service.update_attention(
-            attention_id, payload
+            attention_id, payload, background_tasks
         )
         return updated_attention
     except HTTPException as e:

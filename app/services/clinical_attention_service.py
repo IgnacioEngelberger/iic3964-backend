@@ -231,9 +231,11 @@ def create_attention(
         raise HTTPException(status_code=500, detail=str(e))
 
 
-def update_attention(attention_id: UUID, 
-                     payload: UpdateClinicalAttentionRequest,
-                     background_tasks: BackgroundTasks):
+def update_attention(
+    attention_id: UUID,
+    payload: UpdateClinicalAttentionRequest,
+    background_tasks: BackgroundTasks,
+):
     try:
         attention_detail = get_attention_detail(attention_id)
         should_ai_reevaluate = False

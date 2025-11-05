@@ -89,7 +89,6 @@ def patch_clinical_attention(
     background_tasks: BackgroundTasks,
     attention_id: UUID = Path(..., description="ID de la atención clínica"),
     payload: UpdateClinicalAttentionRequest = None,
-    
 ):
     try:
         updated_attention = clinical_attention_service.update_attention(

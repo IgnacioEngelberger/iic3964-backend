@@ -68,8 +68,9 @@ def list_attentions(
         count_response = count_query.execute()
         total_count = count_response.count or len(data)
 
-        total_global_query = supabase.table("ClinicalAttention").select("id",
-                                                                        count="exact")
+        total_global_query = supabase.table("ClinicalAttention").select(
+            "id", count="exact"
+        )
         total_global_response = total_global_query.execute()
         total_global_count = total_global_response.count or 0
 

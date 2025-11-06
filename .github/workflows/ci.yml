@@ -121,6 +121,8 @@ jobs:
     env:
       SUPABASE_URL: "https://fake.supabase.co"
       SUPABASE_KEY: "fake-key"
+      GEMINI_API_KEY: 'fake-key'
+
     steps:
     - uses: actions/checkout@v4
 

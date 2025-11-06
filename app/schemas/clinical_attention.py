@@ -33,6 +33,7 @@ class ClinicalAttentionListItem(BaseModel):
 
 class ClinicalAttentionsListResponse(BaseModel):
     count: int
+    total: int
     page: int
     page_size: int
     results: list[ClinicalAttentionListItem]

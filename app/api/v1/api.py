@@ -1,6 +1,13 @@
 from fastapi import APIRouter
 
-from app.api.v1.endpoints import clinical_attentions, gemini, health, items, doctors, patients
+from app.api.v1.endpoints import (
+    clinical_attentions,
+    doctors,
+    gemini,
+    health,
+    items,
+    patients,
+)
 
 api_router = APIRouter()
 api_router.include_router(health.router, prefix="/health", tags=["health"])

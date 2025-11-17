@@ -1,37 +1,47 @@
 from typing import List, Optional, Union
-
 from pydantic import AnyHttpUrl, validator
 from pydantic_settings import BaseSettings
-
+import json
 
 class Settings(BaseSettings):
     API_V1_STR: str = "/api/v1"
     PROJECT_NAME: str = "IIC3964 Backend"
     VERSION: str = "1.0.0"
 
-    # CORS
-    BACKEND_CORS_ORIGINS: List[AnyHttpUrl] = []
+    # CORS (important: Union[str, List[AnyHttpUrl]])
+    BACKEND_CORS_ORIGINS: Union[str, List[str]] = ""
 
     @validator("BACKEND_CORS_ORIGINS", pre=True)
-    def assemble_cors_origins(cls, v: Union[str, List[str]]) -> Union[List[str], str]:
-        if isinstance(v, str) and not v.startswith("["):
-            return [i.strip() for i in v.split(",")]
-        elif isinstance(v, (list, str)):
+    def assemble_cors_origins(cls, v):
+        if not v:
+            return []
+
+        # JSON-style list e.g. ["http://localhost:3000"]
+        if isinstance(v, str) and v.strip().startswith("["):
+            try:
+                return json.loads(v)
+            except:
+                raise ValueError(f"Invalid JSON for BACKEND_CORS_ORIGINS: {v}")
+
+        # Comma-separated string
+        if isinstance(v, str):
+            return [origin.strip() for origin in v.split(",") if origin.strip()]
+
+        # Already a list
+        if isinstance(v, list):
             return v
+
         raise ValueError(v)
 
-    # Database
     DATABASE_URL: str = "sqlite:///./app.db"
     SUPABASE_URL: str = ""
     SUPABASE_KEY: str = ""
 
-    # Environment
     ENVIRONMENT: str = "development"
 
-    # Security
     SECRET_KEY: str = "your-secret-key-change-in-production"
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 30
-    # Gemini / Google GenAI
+
     GEMINI_API_KEY: Optional[str] = None
     GEMINI_MODEL: str = "gemini-2.5-flash"
 

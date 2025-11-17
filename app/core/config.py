@@ -1,7 +1,9 @@
-from typing import List, Optional, Union
-from pydantic import AnyHttpUrl, validator
-from pydantic_settings import BaseSettings
 import json
+from typing import List, Optional, Union
+
+from pydantic import validator
+from pydantic_settings import BaseSettings
+
 
 class Settings(BaseSettings):
     API_V1_STR: str = "/api/v1"
@@ -20,8 +22,8 @@ class Settings(BaseSettings):
         if isinstance(v, str) and v.strip().startswith("["):
             try:
                 return json.loads(v)
-            except:
-                raise ValueError(f"Invalid JSON for BACKEND_CORS_ORIGINS: {v}")
+            except Exception as e:
+                raise ValueError(f"Invalid JSON for BACKEND_CORS_ORIGINS: {v}") from e
 
         # Comma-separated string
         if isinstance(v, str):

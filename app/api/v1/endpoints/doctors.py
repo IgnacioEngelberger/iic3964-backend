@@ -49,7 +49,6 @@ def get_doctors():
     try:
         resident_doctors = doctor_service.list_resident_doctors()
         supervisor_doctors = doctor_service.list_supervisor_doctors()
-        
         return {"resident": resident_doctors, "supervisor": supervisor_doctors}
     except Exception as e:
         print(f"Error fetching doctors: {e}")

@@ -12,20 +12,13 @@ SYSTEM_STRICT = (
     SYSTEM + "\n\nResponde EXACTAMENTE con este esquema JSON:"
     "\n{"
     '\n  "urgency_flag": "applies|uncertain|does_not_apply",'
+    '\n  "urgency_confidence": 0.0,'
     '\n  "diagnosis_hypotheses": [{"condition": "str", "confidence": 0.0}],'
     '\n  "rationale": "str",'
-    '\n  "actions": ["str", "..."],'
-    '\n  "citations": ["str", "..."],'
-    '\n  "citations_structured": ['
-    "\n    {"
-    '\n      "label": "str",'
-    '\n      "url": "str",'
-    '\n      "snippet": "str",'
-    '\n      "section": "urgency|diagnosis_top|actions|general"'
-    "\n    }"
-    "\n  ]"
+    '\n  "actions": ["str", "..."]'
     "\n}\n"
 )
+
 
 PROMPT_TMPL = """\
 Caso clínico proporcionado por el usuario (texto libre):

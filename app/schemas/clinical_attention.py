@@ -26,6 +26,7 @@ class ClinicalAttentionListItem(BaseModel):
     applies_urgency_law: bool | None
     ai_result: bool | None
     is_overwritten: bool
+    ai_confidence: Optional[float] = None
 
     class Config:
         from_attributes = True
@@ -89,6 +90,7 @@ class ClinicalAttentionDetailResponse(BaseModel):
     ai_reason: Optional[str]
     applies_urgency_law: Optional[bool]
     diagnostic: Optional[str]
+    ai_confidence: Optional[float]
 
 
 class NestedPatient(BaseModel):

@@ -25,7 +25,7 @@ def list_attentions(
 ) -> dict:
     try:
         select_query = (
-            "id, created_at, updated_at, applies_urgency_law, ai_result, "
+            "id, created_at, updated_at, applies_urgency_law, ai_result, ai_confidence,"
             "diagnostic, overwritten_by_id, "
             "patient:patient_id(rut, first_name, last_name), "
             "resident_doctor:resident_doctor_id(first_name, last_name), "
@@ -87,6 +87,7 @@ def list_attentions(
                     updated_at=item.get("updated_at"),
                     applies_urgency_law=item.get("applies_urgency_law"),
                     ai_result=item.get("ai_result"),
+                    ai_confidence=item.get("ai_confidence"),
                     is_overwritten=(item.get("overwritten_by_id") is not None),
                     patient=PatientInfo(**patient_data),
                     resident_doctor=DoctorInfo(**resident_data),
@@ -115,7 +116,7 @@ def get_attention_detail(attention_id: UUID) -> ClinicalAttentionDetailResponse:
             "deleted_by:deleted_by_id(id, first_name, last_name), "
             "overwritten_reason, "
             "overwritten_by:overwritten_by_id(id, first_name, last_name), "
-            "ai_result, ai_reason, applies_urgency_law, diagnostic, "
+            "ai_result, ai_reason, applies_urgency_law, diagnostic, ai_confidence, "
             "patient:patient_id(id, rut, first_name, last_name, email), "
             "resident_doctor:resident_doctor_id("
             "id, first_name, last_name, email, phone), "
@@ -163,6 +164,7 @@ def get_attention_detail(attention_id: UUID) -> ClinicalAttentionDetailResponse:
             ai_reason=item.get("ai_reason"),
             applies_urgency_law=item.get("applies_urgency_law"),
             diagnostic=item.get("diagnostic"),
+            ai_confidence=item.get("ai_confidence"),
         )
 
     except LookupError:
@@ -214,7 +216,7 @@ def create_attention(
                     "overwritten_by_id": None,
                     "deleted_by_id": None,
                     "diagnostic": payload.diagnostic,
-                    "ai_result": False,
+                    "ai_result": None,
                     "ai_reason": None,
                 }
             )

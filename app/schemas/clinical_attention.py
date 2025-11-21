@@ -122,6 +122,7 @@ class CreateClinicalAttentionRequest(BaseModel):
 class UpdateClinicalAttentionRequest(BaseModel):
     patient: Optional[Union[UUID, NestedPatient]] = None
     resident_doctor_id: Optional[UUID] = None
+    supervisor_doctor_id: Optional[UUID] = None
     diagnostic: Optional[str] = None
     is_deleted: Optional[bool] = None
 

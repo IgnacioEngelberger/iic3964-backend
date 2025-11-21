@@ -8,6 +8,7 @@ from app.schemas.clinical_attention import (
     ClinicalAttentionsListResponse,
     CreateClinicalAttentionRequest,
     DeleteClinicalAttentionRequest,
+    MedicApprovalRequest,
     UpdateClinicalAttentionRequest,
 )
 from app.services import clinical_attention_service
@@ -102,6 +103,31 @@ def patch_clinical_attention(
         raise HTTPException(
             status_code=500, detail="Error interno al actualizar la atención clínica"
         )
+
+
+@router.patch(
+    "/clinical_attentions/{attention_id}/medic_approval",
+    response_model=ClinicalAttentionDetailResponse,
+    tags=["Clinical Attentions"],
+)
+def medic_approval(
+    attention_id: UUID,
+    payload: MedicApprovalRequest,
+):
+    try:
+        updated = clinical_attention_service.medic_approval(
+            attention_id=attention_id,
+            medic_id=payload.medic_id,
+            approved=payload.approved,
+            reason=payload.reason,
+        )
+        return updated
+
+    except HTTPException as e:
+        raise e
+    except Exception as e:
+        print(f"Error medic_approval endpoint: {e}")
+        raise HTTPException(status_code=500, detail="Internal error")
 
 
 @router.delete(

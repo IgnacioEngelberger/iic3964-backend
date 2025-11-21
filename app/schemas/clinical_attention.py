@@ -2,7 +2,7 @@ from datetime import datetime
 from typing import Optional, Union
 from uuid import UUID
 
-from pydantic import BaseModel, EmailStr
+from pydantic import BaseModel, EmailStr, Field
 
 
 class PatientInfo(BaseModel):
@@ -25,8 +25,7 @@ class ClinicalAttentionListItem(BaseModel):
     supervisor_doctor: DoctorInfo
     applies_urgency_law: bool | None
     ai_result: bool | None
-    is_overwritten: bool
-    ai_confidence: Optional[float] = None
+    medic_approved: bool | None
 
     class Config:
         from_attributes = True
@@ -91,6 +90,9 @@ class ClinicalAttentionDetailResponse(BaseModel):
     applies_urgency_law: Optional[bool]
     diagnostic: Optional[str]
     ai_confidence: Optional[float]
+    medic_approved: bool | None = None
+    overwritten_reason: str | None = None
+    overwritten_by: OverwrittenBy | None = None
 
 
 class NestedPatient(BaseModel):
@@ -127,6 +129,12 @@ class UpdateClinicalAttentionRequest(BaseModel):
     supervisor_doctor_id: Optional[UUID] = None
     diagnostic: Optional[str] = None
     is_deleted: Optional[bool] = None
+
+
+class MedicApprovalRequest(BaseModel):
+    medic_id: UUID = Field(..., description="ID del médico que aprueba/rechaza")
+    approved: bool = Field(..., description="True = aprueba, False = rechaza")
+    reason: str | None = Field(None, description="Razón si el médico rechaza")
 
 
 class DeleteClinicalAttentionRequest(BaseModel):

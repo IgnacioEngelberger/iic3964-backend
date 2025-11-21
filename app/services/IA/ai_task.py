@@ -21,7 +21,7 @@ def run_ai_reasoning_task(attention_id: UUID, diagnostic: str):
         supabase.table("ClinicalAttention").update(
             {
                 "applies_urgency_law": applies_law,  # boolean
-                "ai_result": True,  # short string
+                "ai_result": applies_law,  # short string
                 "ai_reason": ai_output.rationale,  # detailed JSON string
                 "ai_confidence": ai_output.urgency_confidence,  # new field
             }

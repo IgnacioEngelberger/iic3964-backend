@@ -22,7 +22,12 @@ lint: ## Run linting
 	poetry run flake8 app tests
 	poetry run black --check app tests
 	poetry run isort --check-only app tests
-# 	poetry run mypy app
+
+fix: ## Auto-fix formatting issues
+	poetry run black app tests
+	poetry run isort app tests
+	poetry run flake8 app tests --exit-zero
+
 
 format: ## Format code
 	poetry run black app tests

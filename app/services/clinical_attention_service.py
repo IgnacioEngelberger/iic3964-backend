@@ -247,6 +247,10 @@ def update_attention(
         attention_detail = get_attention_detail(attention_id)
         should_ai_reevaluate = False
         update_data = {}
+
+        def to_str(v):
+            return str(v) if isinstance(v, UUID) else v
+
         if payload.patient:
             if isinstance(payload.patient, dict):
                 new_patient_id = str(uuid.uuid4())
@@ -261,9 +265,14 @@ def update_attention(
                 ).execute()
                 update_data["patient_id"] = new_patient_id
             else:
-                update_data["patient_id"] = str(payload.patient)
+                update_data["patient_id"] = to_str(payload.patient)
+
         if payload.resident_doctor_id:
-            update_data["resident_doctor_id"] = str(payload.resident_doctor_id)
+            update_data["resident_doctor_id"] = to_str(payload.resident_doctor_id)
+
+        if payload.supervisor_doctor_id:
+            update_data["supervisor_doctor_id"] = to_str(payload.supervisor_doctor_id)
+
         if payload.diagnostic is not None:
             update_data["diagnostic"] = payload.diagnostic
             if payload.diagnostic != attention_detail.diagnostic:
@@ -278,10 +287,12 @@ def update_attention(
         supabase.table("ClinicalAttention").update(update_data).eq(
             "id", str(attention_id)
         ).execute()
+
         if should_ai_reevaluate:
             background_tasks.add_task(
-                run_ai_reasoning_task, UUID(attention_id), payload.diagnostic
+                run_ai_reasoning_task, attention_id, payload.diagnostic
             )
+
         return get_attention_detail(attention_id)
 
     except LookupError:

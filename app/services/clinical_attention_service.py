@@ -21,7 +21,11 @@ from app.services.IA.ai_task import run_ai_reasoning_task
 
 
 def list_attentions(
-    page: int, page_size: int, search: str | None, order: str | None
+    page: int,
+    page_size: int,
+    search: str | None,
+    order: str | None,
+    resident_doctor_id: str | UUID | None = None,  # <--- NUEVO PARÁMETRO
 ) -> dict:
     try:
         select_query = (
@@ -33,6 +37,12 @@ def list_attentions(
         )
 
         query = supabase.table("ClinicalAttention").select(select_query)
+
+        # --- LÓGICA DE FILTRADO POR ROL ---
+        if resident_doctor_id:
+            # Si se pasa un ID de residente, filtramos para mostrar SOLO sus atenciones
+            query = query.eq("resident_doctor_id", str(resident_doctor_id))
+        # ----------------------------------
 
         search_filter = None
         if search:
@@ -61,16 +71,28 @@ def list_attentions(
         response = query.execute()
         data = response.data or []
 
+        # Count Query Logic
         count_query = supabase.table("ClinicalAttention").select("id", count="exact")
         count_query = count_query.eq("is_deleted", False)
+
+        # También debemos aplicar el filtro de residente al conteo total
+        if resident_doctor_id:
+            count_query = count_query.eq("resident_doctor_id", str(resident_doctor_id))
+
         if search_filter:
             count_query = count_query.filter(f"or({search_filter})")
         count_response = count_query.execute()
         total_count = count_response.count or len(data)
 
+        # Total Global (sin filtros de búsqueda, pero CON filtro de rol)
         total_global_query = supabase.table("ClinicalAttention").select(
             "id", count="exact"
         )
+        if resident_doctor_id:
+            total_global_query = total_global_query.eq(
+                "resident_doctor_id", str(resident_doctor_id)
+            )
+
         total_global_response = total_global_query.execute()
         total_global_count = total_global_response.count or 0
 
@@ -242,6 +264,7 @@ def update_attention(
     attention_id: UUID,
     payload: UpdateClinicalAttentionRequest,
     background_tasks: BackgroundTasks,
+    editor_id: UUID = None,
 ):
     try:
         attention_detail = get_attention_detail(attention_id)
@@ -280,6 +303,16 @@ def update_attention(
 
         if payload.is_deleted is not None:
             update_data["is_deleted"] = payload.is_deleted
+
+        # --- LÓGICA NUEVA ---
+        if payload.applies_urgency_law is not None:
+            update_data["applies_urgency_law"] = payload.applies_urgency_law
+
+        if payload.overwritten_reason is not None:
+            update_data["overwritten_reason"] = payload.overwritten_reason
+
+        if editor_id:
+            update_data["overwritten_by_id"] = str(editor_id)
 
         if not update_data:
             return attention_detail

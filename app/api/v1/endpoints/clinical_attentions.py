@@ -91,8 +91,9 @@ def patch_clinical_attention(
     payload: UpdateClinicalAttentionRequest = None,
 ):
     try:
+        FAKE_EDITOR_ID = "392c3fe1-ee87-4bbb-ae46-d2733a84bf8f"
         updated_attention = clinical_attention_service.update_attention(
-            attention_id, payload, background_tasks
+            attention_id, payload, background_tasks, editor_id=FAKE_EDITOR_ID
         )
         return updated_attention
     except HTTPException as e:

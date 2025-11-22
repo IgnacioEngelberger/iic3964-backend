@@ -90,17 +90,12 @@ def _normalize_citations_structured(raw: Any) -> List[Dict[str, Any]]:
 def _coerce_to_schema(raw: Dict[str, Any]) -> Dict[str, Any]:
     data = dict(raw)
     data.setdefault("urgency_flag", "uncertain")
+    data.setdefault("urgency_confidence", 0.0)
     data.setdefault("diagnosis_hypotheses", [])
     data.setdefault("rationale", "")
     data.setdefault("actions", [])
-    data.setdefault("citations", [])
-    data.setdefault("citations_structured", [])
 
     data["diagnosis_hypotheses"] = _normalize_hypotheses(data["diagnosis_hypotheses"])
-    data["citations"] = _normalize_citations(data["citations"])
-    data["citations_structured"] = _normalize_citations_structured(
-        data["citations_structured"]
-    )
     return data
 
 
@@ -114,14 +109,14 @@ def reason(text: str) -> UrgencyOutput:
         # Return deterministic mock output for CI
         return UrgencyOutput(
             urgency_flag="uncertain",
+            urgency_confidence=0.0,
             diagnosis_hypotheses=[
                 {"condition": "Mock diagnosis (CI mode)", "confidence": 0.0}
             ],
             rationale="AI disabled in CI – using mock result.",
             actions=["No AI actions generated (CI mode)"],
-            citations=[],
-            citations_structured=[],
         )
+
     if client is None:
         raise RuntimeError(
             "google-genai client is not available. Install 'google-genai' and "
@@ -149,7 +144,7 @@ def reason(text: str) -> UrgencyOutput:
                 time.sleep(2 ** (attempt - 1))
                 continue
             raise
-
+    print(response)
     raw = _json_from_text(response.text or "{}")
     data = _coerce_to_schema(raw)
     return UrgencyOutput(**data)

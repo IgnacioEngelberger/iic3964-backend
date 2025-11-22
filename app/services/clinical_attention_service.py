@@ -25,8 +25,8 @@ def list_attentions(
 ) -> dict:
     try:
         select_query = (
-            "id, created_at, updated_at, applies_urgency_law, ai_result, "
-            "diagnostic, overwritten_by_id, "
+            "id, created_at, updated_at, applies_urgency_law,"
+            "ai_result, overwritten_by_id, medic_approved, "
             "patient:patient_id(rut, first_name, last_name), "
             "resident_doctor:resident_doctor_id(first_name, last_name), "
             "supervisor_doctor:supervisor_doctor_id(first_name, last_name)"
@@ -87,10 +87,10 @@ def list_attentions(
                     updated_at=item.get("updated_at"),
                     applies_urgency_law=item.get("applies_urgency_law"),
                     ai_result=item.get("ai_result"),
-                    is_overwritten=(item.get("overwritten_by_id") is not None),
                     patient=PatientInfo(**patient_data),
                     resident_doctor=DoctorInfo(**resident_data),
                     supervisor_doctor=DoctorInfo(**supervisor_data),
+                    medic_approved=item.get("medic_approved"),
                 )
             )
 
@@ -115,7 +115,8 @@ def get_attention_detail(attention_id: UUID) -> ClinicalAttentionDetailResponse:
             "deleted_by:deleted_by_id(id, first_name, last_name), "
             "overwritten_reason, "
             "overwritten_by:overwritten_by_id(id, first_name, last_name), "
-            "ai_result, ai_reason, applies_urgency_law, diagnostic, "
+            "ai_result, ai_reason, applies_urgency_law, diagnostic,"
+            "ai_confidence, medic_approved,"
             "patient:patient_id(id, rut, first_name, last_name, email), "
             "resident_doctor:resident_doctor_id("
             "id, first_name, last_name, email, phone), "
@@ -163,6 +164,8 @@ def get_attention_detail(attention_id: UUID) -> ClinicalAttentionDetailResponse:
             ai_reason=item.get("ai_reason"),
             applies_urgency_law=item.get("applies_urgency_law"),
             diagnostic=item.get("diagnostic"),
+            ai_confidence=item.get("ai_confidence"),
+            medic_approved=item.get("medic_approved"),
         )
 
     except LookupError:
@@ -214,7 +217,7 @@ def create_attention(
                     "overwritten_by_id": None,
                     "deleted_by_id": None,
                     "diagnostic": payload.diagnostic,
-                    "ai_result": False,
+                    "ai_result": None,
                     "ai_reason": None,
                 }
             )
@@ -302,6 +305,52 @@ def update_attention(
         raise HTTPException(
             status_code=500, detail="Error al actualizar la atención clínica"
         )
+
+
+def medic_approval(
+    attention_id: UUID, medic_id: UUID, approved: bool, reason: str | None
+):
+    try:
+        detail = get_attention_detail(attention_id)
+        if not detail:
+            raise HTTPException(
+                status_code=404, detail="Atención clínica no encontrada"
+            )
+
+        update_data = {"medic_approved": approved}
+        print(update_data)
+        if approved is False:
+            if not reason:
+                raise HTTPException(
+                    status_code=400,
+                    detail="Debe entregar una razón al rechazar el diagnóstico",
+                )
+            update_data["applies_urgency_law"] = not detail.applies_urgency_law
+            update_data["overwritten_reason"] = reason
+            update_data["overwritten_by_id"] = str(medic_id)
+
+        # Si aprueba, limpiamos rechazo anterior
+        if approved is True:
+            update_data["overwritten_reason"] = None
+            update_data["overwritten_by_id"] = None
+
+        resp = (
+            supabase.table("ClinicalAttention")
+            .update(update_data)
+            .eq("id", str(attention_id))
+            .execute()
+        )
+        print(resp)
+        if not resp.data:
+            raise HTTPException(status_code=400, detail="No se pudo actualizar")
+
+        return get_attention_detail(attention_id)
+
+    except HTTPException:
+        raise
+    except Exception as e:
+        print(f"Error medic_approval service: {e}")
+        raise HTTPException(status_code=500, detail="Internal error")
 
 
 def delete_attention(attention_id: UUID, deleted_by_id: UUID):

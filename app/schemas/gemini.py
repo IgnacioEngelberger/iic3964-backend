@@ -67,30 +67,26 @@ class UrgencyOutput(BaseModel):
     """Model returned after Gemini reasoning about Ley de Urgencia."""
 
     urgency_flag: Literal["applies", "uncertain", "does_not_apply"]
+    urgency_confidence: float = Field(default=0.0, ge=0, le=1)
     diagnosis_hypotheses: List[Dx]
     rationale: str
     actions: List[str]
-    citations: List[str] = Field(default_factory=list)
-    citations_structured: List[CitationObj] = Field(default_factory=list)
 
     class Config:
         schema_extra = {
             "example": {
                 "urgency_flag": "applies",
+                "urgency_confidence": 0.92,
                 "diagnosis_hypotheses": [],
                 "rationale": (
                     "Paciente con dolor torácico intenso, sudoración profusa, "
-                    "hipotensión (TA 90/60) y taquicardia (FC 110). Antecedentes: "
-                    "HTA y diabetes. Cuadro de 2 horas de evolución. Sugiere evento "
-                    "cardiovascular agudo con riesgo vital o secuela grave. Requiere "
-                    "atención inmediata. Corresponde activar Ley de Urgencia."
+                    "hipotensión y taquicardia. Cuadro sugiere evento cardiovascular "
+                    "agudo con riesgo vital. Corresponde activar Ley de Urgencia."
                 ),
                 "actions": [
                     "Activar Ley de Urgencia",
-                    "Traslado a centro de alta complejidad",
-                    "Estabilización y evaluación de emergencia",
+                    "Traslado inmediato",
+                    "Estabilización inicial",
                 ],
-                "citations": [],
-                "citations_structured": [],
             }
         }

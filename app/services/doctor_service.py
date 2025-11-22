@@ -39,3 +39,37 @@ def list_supervisor_doctors() -> list[dict]:
     except Exception as e:
         print(f"Error in list_supervisor_doctors service: {e}")
         raise
+
+
+def create_doctor(
+    doctor_id: str, email: str, first_name: str, last_name: str, role: str
+) -> dict:
+    """
+    Creates a new doctor record in the 'User' table.
+    Used during the registration process to sync Auth with public data.
+    """
+    try:
+        # Normalizar el rol para que coincida con la BD (resident -> Resident)
+        role_mapping = {"resident": "Resident", "supervisor": "Supervisor"}
+        db_role = role_mapping.get(
+            role.lower(), "Resident"
+        )  # Default a Resident por seguridad
+
+        payload = {
+            "id": doctor_id,
+            "email": email,
+            "first_name": first_name,
+            "last_name": last_name,
+            "role": db_role,
+            "is_deleted": False,
+        }
+
+        response = supabase.table("User").insert(payload).execute()
+
+        if not response.data:
+            raise Exception("No se pudo insertar el doctor en la tabla User")
+
+        return response.data[0]
+    except Exception as e:
+        print(f"Error in create_doctor service: {e}")
+        raise

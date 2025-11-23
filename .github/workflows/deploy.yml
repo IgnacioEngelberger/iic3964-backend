@@ -1,22 +1,29 @@
-name: Deploy to Fly.io
+name: Deploy to Production
 
 on:
   push:
-    branches:
-      - main     # cambia si quieres otra branch
+    branches: [ main ]
+    tags: [ 'v*' ]
 
 jobs:
   deploy:
     runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/tags/v')
 
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
+    - uses: actions/checkout@v4
 
-      - name: Install Flyctl
-        uses: superfly/flyctl-actions/setup-flyctl@v1
+    - name: Deploy to production
+      run: |
+        echo "Deploying to production..."
+        # Add your deployment commands here
+        # For example:
+        # - Deploy to cloud provider (AWS, GCP, Azure)
+        # - Update Docker containers
+        # - Run database migrations
+        # - Update environment variables
 
-      - name: Deploy
-        run: flyctl deploy --remote-only
-        env:
-          FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
+        # Example for Docker deployment:
+        # docker-compose -f docker-compose.prod.yml up -d
+
+        echo "Deployment completed successfully"

@@ -274,6 +274,8 @@ def update_attention(
         should_ai_reevaluate = False
         update_data = {}
 
+        explicit_data = payload.model_dump(exclude_unset=True)
+
         def to_str(v):
             return str(v) if isinstance(v, UUID) else v
 
@@ -307,14 +309,19 @@ def update_attention(
         if payload.is_deleted is not None:
             update_data["is_deleted"] = payload.is_deleted
 
-        # --- LÓGICA NUEVA ---
         if payload.applies_urgency_law is not None:
             update_data["applies_urgency_law"] = payload.applies_urgency_law
 
-        if payload.overwritten_reason is not None:
+        if "overwritten_reason" in explicit_data:
             update_data["overwritten_reason"] = payload.overwritten_reason
 
-        if editor_id:
+        if "medic_approved" in explicit_data:
+            update_data["medic_approved"] = payload.medic_approved
+
+        if "overwritten_by" in explicit_data:
+            val = payload.overwritten_by
+            update_data["overwritten_by_id"] = str(val) if val else None
+        elif editor_id:
             update_data["overwritten_by_id"] = str(editor_id)
 
         if not update_data:

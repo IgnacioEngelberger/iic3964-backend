@@ -38,7 +38,7 @@ def get_patient_by_id(patient_id: UUID) -> dict:
         )
         return response.data
     except Exception as e:
-        print(f"Error fetching patient {patient_id}: {e}")
+        print(f"Error fetching patient: {e}")
         raise
 
 

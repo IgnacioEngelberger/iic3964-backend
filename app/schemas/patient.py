@@ -1,7 +1,7 @@
 from typing import Optional
 from uuid import UUID
 
-from pydantic import BaseModel, EmailStr, Field
+from pydantic import BaseModel, Field
 
 
 class PatientBase(BaseModel):
@@ -16,7 +16,6 @@ class PatientBase(BaseModel):
     aseguradora: Optional[str] = Field(
         None, description="Aseguradora (Fonasa, Isapre, etc)"
     )
-    email: Optional[EmailStr] = None
 
 
 class PatientCreate(PatientBase):
@@ -33,7 +32,6 @@ class PatientUpdate(BaseModel):
     height: Optional[float] = None
     weight: Optional[float] = None
     aseguradora: Optional[str] = None
-    email: Optional[EmailStr] = None
 
 
 class PatientResponse(PatientBase):

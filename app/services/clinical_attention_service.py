@@ -29,7 +29,7 @@ def list_attentions(
 ) -> dict:
     try:
         select_query = (
-            "id, created_at, updated_at, applies_urgency_law,"
+            "id,id_episodio, created_at, updated_at, applies_urgency_law,"
             "ai_result, overwritten_by_id, medic_approved, "
             "patient:patient_id(rut, first_name, last_name), "
             "resident_doctor:resident_doctor_id(first_name, last_name), "
@@ -105,6 +105,7 @@ def list_attentions(
             results_list.append(
                 ClinicalAttentionListItem(
                     id=item["id"],
+                    id_episodio=item.get("id_episodio"),
                     created_at=item.get("created_at"),
                     updated_at=item.get("updated_at"),
                     applies_urgency_law=item.get("applies_urgency_law"),
@@ -132,7 +133,7 @@ def list_attentions(
 def get_attention_detail(attention_id: UUID) -> ClinicalAttentionDetailResponse:
     try:
         select_query = (
-            "id, created_at, updated_at, "
+            "id, id_episodio, created_at, updated_at, "
             "is_deleted, deleted_at, "
             "deleted_by:deleted_by_id(id, first_name, last_name), "
             "overwritten_reason, "
@@ -168,6 +169,7 @@ def get_attention_detail(attention_id: UUID) -> ClinicalAttentionDetailResponse:
 
         return ClinicalAttentionDetailResponse(
             id=item["id"],
+            id_episodio=item.get("id_episodio"),
             created_at=item.get("created_at"),
             updated_at=item.get("updated_at"),
             is_deleted=bool(item.get("is_deleted", False)),
@@ -231,6 +233,7 @@ def create_attention(
             .insert(
                 {
                     "id": attention_id,
+                    "id_episodio": payload.id_episodio,
                     "patient_id": patient_id,
                     "resident_doctor_id": str(payload.resident_doctor_id),
                     "supervisor_doctor_id": str(payload.supervisor_doctor_id)
@@ -312,6 +315,8 @@ def update_attention(
         if payload.applies_urgency_law is not None:
             update_data["applies_urgency_law"] = payload.applies_urgency_law
 
+        if payload.id_episodio is not None:
+            update_data["id_episodio"] = payload.id_episodio
         if "overwritten_reason" in explicit_data:
             update_data["overwritten_reason"] = payload.overwritten_reason
 

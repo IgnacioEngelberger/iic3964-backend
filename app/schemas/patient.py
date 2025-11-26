@@ -19,7 +19,7 @@ class PatientBase(BaseModel):
     email: Optional[EmailStr] = None
 
 
-class arPatientCreate(PatientBase):
+class PatientCreate(PatientBase):
     pass
 
 

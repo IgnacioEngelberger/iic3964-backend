@@ -18,6 +18,7 @@ class DoctorInfo(BaseModel):
 
 class ClinicalAttentionListItem(BaseModel):
     id: UUID
+    id_episodio: Optional[str] = None  # <--- NUEVO
     created_at: Optional[datetime] = None
     updated_at: Optional[datetime] = None
     patient: PatientInfo
@@ -75,6 +76,7 @@ class DoctorDetail(BaseModel):
 
 class ClinicalAttentionDetailResponse(BaseModel):
     id: UUID
+    id_episodio: Optional[str] = None
     created_at: Optional[str]
     updated_at: Optional[str]
     is_deleted: Optional[bool]
@@ -104,6 +106,7 @@ class NestedPatient(BaseModel):
 
 class CreateClinicalAttentionRequest(BaseModel):
     patient_id: Union[UUID, NestedPatient]
+    id_episodio: Optional[str] = None
     resident_doctor_id: UUID
     supervisor_doctor_id: Optional[UUID] = None
     diagnostic: str
@@ -129,6 +132,7 @@ class UpdateClinicalAttentionRequest(BaseModel):
     supervisor_doctor_id: Optional[UUID] = None
     diagnostic: Optional[str] = None
     is_deleted: Optional[bool] = None
+    id_episodio: Optional[str] = None
     applies_urgency_law: Optional[bool] = None
     overwritten_reason: Optional[str] = None
     medic_approved: Optional[bool] = None

@@ -131,6 +131,8 @@ class UpdateClinicalAttentionRequest(BaseModel):
     is_deleted: Optional[bool] = None
     applies_urgency_law: Optional[bool] = None
     overwritten_reason: Optional[str] = None
+    medic_approved: Optional[bool] = None
+    overwritten_by: Optional[UUID] = None
 
 
 class MedicApprovalRequest(BaseModel):

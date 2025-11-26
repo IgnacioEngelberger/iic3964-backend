@@ -1,9 +1,9 @@
-from fastapi import APIRouter, HTTPException, Query
+from fastapi import APIRouter, Query
 
 from app.schemas.insurance_company import (
-    InsuranceCompanyListResponse,
-    InsuranceCompanyDetailResponse,
     InsuranceCompanyCreateRequest,
+    InsuranceCompanyDetailResponse,
+    InsuranceCompanyListResponse,
     InsuranceCompanyUpdateRequest,
 )
 from app.services import insurance_company_service

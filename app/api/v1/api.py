@@ -6,9 +6,9 @@ from app.api.v1.endpoints import (
     doctors,
     gemini,
     health,
+    insurance_company,
     items,
     patients,
-    insurance_company,
 )
 
 api_router = APIRouter()
@@ -22,5 +22,7 @@ api_router.include_router(
     clinical_attentions.router, prefix="", tags=["Clinical Attentions"]
 )
 api_router.include_router(
-    insurance_company.router, prefix="/insurance_companies", tags=["Insurance Companies"]
+    insurance_company.router,
+    prefix="/insurance_companies",
+    tags=["Insurance Companies"],
 )

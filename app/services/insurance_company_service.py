@@ -1,11 +1,11 @@
 from fastapi import HTTPException
-from app.core.supabase_client import supabase
 
+from app.core.supabase_client import supabase
 from app.schemas.insurance_company import (
+    InsuranceCompanyCreateRequest,
     InsuranceCompanyDetailResponse,
     InsuranceCompanyListItem,
     InsuranceCompanyListResponse,
-    InsuranceCompanyCreateRequest,
     InsuranceCompanyUpdateRequest,
 )
 
@@ -69,10 +69,7 @@ def list_companies(page: int, page_size: int, search: str | None, order: str | N
 
 def get_company(company_id: int) -> InsuranceCompanyDetailResponse:
     result = (
-        supabase.table("insurance_company")
-        .select("*")
-        .eq("id", company_id)
-        .execute()
+        supabase.table("insurance_company").select("*").eq("id", company_id).execute()
     )
 
     if not result.data:
@@ -109,9 +106,7 @@ def create_company(payload: InsuranceCompanyCreateRequest):
 
 
 def update_company(company_id: int, payload: InsuranceCompanyUpdateRequest):
-    update_data = {
-        k: v for k, v in payload.model_dump(exclude_unset=True).items()
-    }
+    update_data = {k: v for k, v in payload.model_dump(exclude_unset=True).items()}
 
     if not update_data:
         return get_company(company_id)
@@ -130,12 +125,7 @@ def update_company(company_id: int, payload: InsuranceCompanyUpdateRequest):
 
 
 def delete_company(company_id: int):
-    result = (
-        supabase.table("insurance_company")
-        .delete()
-        .eq("id", company_id)
-        .execute()
-    )
+    result = supabase.table("insurance_company").delete().eq("id", company_id).execute()
 
     if result.data is None:
         raise HTTPException(status_code=404, detail="Compañía no encontrada")

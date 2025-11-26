@@ -1,6 +1,7 @@
 # app/api/v1/endpoints/patients.py
-from fastapi import APIRouter, HTTPException
 from uuid import UUID
+
+from fastapi import APIRouter, HTTPException
 
 from app.schemas.patient import PatientCreate, PatientUpdate
 from app.services import patient_service
@@ -24,6 +25,7 @@ def get_patients():
             detail="Error al obtener pacientes",
         )
 
+
 @router.get("/patients/{patient_id}", tags=["Patients"])
 def get_patient(patient_id: UUID):
     """
@@ -39,6 +41,7 @@ def get_patient(patient_id: UUID):
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
+
 @router.post("/patients", tags=["Patients"])
 def create_patient(patient: PatientCreate):
     """
@@ -48,7 +51,10 @@ def create_patient(patient: PatientCreate):
         new_patient = patient_service.create_patient(patient)
         return new_patient
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Error al crear paciente: {str(e)}")
+        raise HTTPException(
+            status_code=500, detail=f"Error al crear paciente: {str(e)}"
+        )
+
 
 @router.patch("/patients/{patient_id}", tags=["Patients"])
 def update_patient(patient_id: UUID, patient_update: PatientUpdate):
@@ -59,4 +65,6 @@ def update_patient(patient_id: UUID, patient_update: PatientUpdate):
         updated_patient = patient_service.update_patient(patient_id, patient_update)
         return updated_patient
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Error al actualizar paciente: {str(e)}")
+        raise HTTPException(
+            status_code=500, detail=f"Error al actualizar paciente: {str(e)}"
+        )

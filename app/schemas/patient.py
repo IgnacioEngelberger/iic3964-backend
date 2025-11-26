@@ -1,6 +1,8 @@
 from typing import Optional
 from uuid import UUID
+
 from pydantic import BaseModel, EmailStr, Field
+
 
 class PatientBase(BaseModel):
     rut: str
@@ -11,11 +13,15 @@ class PatientBase(BaseModel):
     sex: Optional[str] = Field(None, description="M, F, u Otro")
     height: Optional[float] = Field(None, description="Altura en cm o metros")
     weight: Optional[float] = Field(None, description="Peso en kg")
-    aseguradora: Optional[str] = Field(None, description="Aseguradora (Fonasa, Isapre, etc)")
+    aseguradora: Optional[str] = Field(
+        None, description="Aseguradora (Fonasa, Isapre, etc)"
+    )
     email: Optional[EmailStr] = None
 
-class PatientCreate(PatientBase):
+
+class arPatientCreate(PatientBase):
     pass
+
 
 class PatientUpdate(BaseModel):
     rut: Optional[str] = None
@@ -28,6 +34,7 @@ class PatientUpdate(BaseModel):
     weight: Optional[float] = None
     aseguradora: Optional[str] = None
     email: Optional[EmailStr] = None
+
 
 class PatientResponse(PatientBase):
     id: UUID

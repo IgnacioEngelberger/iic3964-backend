@@ -2,7 +2,7 @@ from datetime import datetime
 from typing import Optional, Union
 from uuid import UUID
 
-from pydantic import BaseModel, EmailStr, Field
+from pydantic import BaseModel, Field
 
 
 class PatientInfo(BaseModel):
@@ -63,7 +63,6 @@ class PatientDetail(BaseModel):
     rut: Optional[str]
     first_name: Optional[str]
     last_name: Optional[str]
-    email: Optional[str]
 
 
 class DoctorDetail(BaseModel):
@@ -101,7 +100,6 @@ class NestedPatient(BaseModel):
     rut: str
     first_name: str
     last_name: str
-    email: EmailStr
 
 
 class CreateClinicalAttentionRequest(BaseModel):

@@ -14,11 +14,13 @@ def register_user(user_in: UserCreate):
     """
     Register a new user in Supabase Auth AND the public 'User' table.
     """
+    print(f"Registering user: {user_in.email}")
     # 1. Validar Rol
     if user_in.role not in ["resident", "supervisor", "admin"]:
         raise HTTPException(status_code=400, detail="Invalid role")
 
     try:
+        print(f"Registering user with role: {user_in.role}")
         # 2. Crear en Supabase Auth
         user_options = {
             "data": {

@@ -1,7 +1,15 @@
 # app/api/v1/endpoints/clinical_attentions.py
 from uuid import UUID
 
-from fastapi import APIRouter, BackgroundTasks, HTTPException, Path, Query
+from fastapi import (
+    APIRouter,
+    BackgroundTasks,
+    File,
+    HTTPException,
+    Path,
+    Query,
+    UploadFile,
+)
 
 from app.schemas.clinical_attention import (
     ClinicalAttentionDetailResponse,
@@ -151,25 +159,21 @@ def delete_clinical_attention(
 
 # app/api/v1/endpoints/clinical_attentions.py
 
-from fastapi import UploadFile, File
 
 @router.post(
-    "/clinical_attentions/import_insurance_excel",
-    tags=["Clinical Attentions"]
+    "/clinical_attentions/import_insurance_excel", tags=["Clinical Attentions"]
 )
 def import_insurance_excel(
-    insurance_company_id: int = Query(..., description="ID de la aseguradora dueña del archivo"),
-    file: UploadFile = File(...)
+    insurance_company_id: int = Query(
+        ..., description="ID de la aseguradora dueña del archivo"
+    ),
+    file: UploadFile = File(...),
 ):
     try:
         updated = clinical_attention_service.import_insurance_excel(
-            insurance_company_id=insurance_company_id,
-            file=file
+            insurance_company_id=insurance_company_id, file=file
         )
-        return {
-            "updated": updated,
-            "message": "Archivo procesado correctamente"
-        }
+        return {"updated": updated, "message": "Archivo procesado correctamente"}
     except Exception as e:
         print(f"Error import_insurance_excel: {e}")
         raise HTTPException(status_code=500, detail="Error procesando archivo")

@@ -1,10 +1,10 @@
 import uuid
 from datetime import datetime
-from uuid import UUID
-import pandas as pd
 from io import BytesIO
-from fastapi import UploadFile
-from fastapi import BackgroundTasks, HTTPException
+from uuid import UUID
+
+import pandas as pd
+from fastapi import BackgroundTasks, HTTPException, UploadFile
 
 from app.core.supabase_client import supabase
 from app.schemas.clinical_attention import (
@@ -430,8 +430,9 @@ def delete_attention(attention_id: UUID, deleted_by_id: UUID):
     except Exception as e:
         print(f"Error en delete_attention: {e}")
         raise HTTPException(status_code=500, detail=str(e))
-# app/services/clinical_attention_service.py
 
+
+# app/services/clinical_attention_service.py
 
 
 def import_insurance_excel(insurance_company_id: int, file: UploadFile):
@@ -444,7 +445,7 @@ def import_insurance_excel(insurance_company_id: int, file: UploadFile):
         if "id_episodio" not in df.columns or "pertinencia" not in df.columns:
             raise HTTPException(
                 status_code=400,
-                detail="El Excel debe incluir columnas: id_episodio, pertinencia"
+                detail="El Excel debe incluir columnas: id_episodio, pertinencia",
             )
 
         updated_count = 0
@@ -482,9 +483,9 @@ def import_insurance_excel(insurance_company_id: int, file: UploadFile):
                 continue
 
             # Actualizar pertinencia
-            supabase.table("ClinicalAttention").update(
-                {"partinencia": pertinencia}
-            ).eq("id", attention["id"]).execute()
+            supabase.table("ClinicalAttention").update({"partinencia": pertinencia}).eq(
+                "id", attention["id"]
+            ).execute()
 
             updated_count += 1
 

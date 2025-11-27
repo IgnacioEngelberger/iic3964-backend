@@ -13,9 +13,10 @@ def list_patients() -> list[dict]:
         response = (
             supabase.table("Patient")
             .select(
-                "id, rut, first_name, last_name, mother_last_name, age, sex, height, weight,"
-                "insurance_company_id,"
-                "insurance_company:insurance_company(id, nombre_juridico, nombre_comercial, rut)"
+                "id, rut, first_name, last_name, mother_last_name, age, sex,"
+                " height, weight,insurance_company_id,"
+                "insurance_company:"
+                "insurance_company(id, nombre_juridico, nombre_comercial, rut)"
             )
             .eq("is_deleted", False)
             .order("first_name", desc=False)
@@ -26,14 +27,16 @@ def list_patients() -> list[dict]:
         print(f"Error in list_patients service: {e}")
         raise
 
+
 def get_patient_by_id(patient_id: UUID) -> dict:
     try:
         response = (
             supabase.table("Patient")
             .select(
-                "id, rut, first_name, last_name, mother_last_name, age, sex, height, weight,"
-                "insurance_company_id,"
-                "insurance_company:insurance_company(id, nombre_juridico, nombre_comercial, rut)"
+                "id, rut, first_name, last_name, mother_last_name, "
+                "insurance_company_id,age, sex, height, weight,"
+                "insurance_company:"
+                "insurance_company(id, nombre_juridico, nombre_comercial, rut)"
             )
             .eq("id", str(patient_id))
             .single()
@@ -45,7 +48,6 @@ def get_patient_by_id(patient_id: UUID) -> dict:
         raise
 
 
-
 def create_patient(payload: PatientCreate) -> dict:
     """
     Creates a new patient in the database.
@@ -53,7 +55,7 @@ def create_patient(payload: PatientCreate) -> dict:
     try:
         patient_id = str(uuid.uuid4())
         data = payload.model_dump()
-        
+
         data.pop("insurance_company", None)
 
         data["id"] = patient_id

@@ -2,7 +2,9 @@ from typing import Optional
 from uuid import UUID
 
 from pydantic import BaseModel, Field
+
 from .insurance_company import InsuranceCompanyBase
+
 
 class PatientBase(BaseModel):
     rut: str
@@ -13,7 +15,9 @@ class PatientBase(BaseModel):
     sex: Optional[str] = Field(None, description="M, F, u Otro")
     height: Optional[float] = Field(None, description="Altura en cm o metros")
     weight: Optional[float] = Field(None, description="Peso en kg")
-    insurance_company_id: Optional[int] = Field(None, description="ID de la aseguradora")
+    insurance_company_id: Optional[int] = Field(
+        None, description="ID de la aseguradora"
+    )
     insurance_company: Optional[InsuranceCompanyBase] = None
 
 
@@ -26,7 +30,9 @@ class PatientCreate(PatientBase):
     sex: Optional[str] = Field(None, description="M, F, u Otro")
     height: Optional[float] = Field(None, description="Altura en cm o metros")
     weight: Optional[float] = Field(None, description="Peso en kg")
-    insurance_company_id: Optional[int] = Field(None, description="ID de la aseguradora")
+    insurance_company_id: Optional[int] = Field(
+        None, description="ID de la aseguradora"
+    )
 
 
 class PatientUpdate(BaseModel):
@@ -40,6 +46,7 @@ class PatientUpdate(BaseModel):
     weight: Optional[float] = None
     insurance_company_id: Optional[int] = None
 
+
 class PatientResponse(PatientBase):
     id: UUID
     insurance_company_id: int | None = None
@@ -48,4 +55,3 @@ class PatientResponse(PatientBase):
 
     class Config:
         from_attributes = True
-

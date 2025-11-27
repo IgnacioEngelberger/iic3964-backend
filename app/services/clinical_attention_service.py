@@ -1,7 +1,9 @@
 import uuid
 from datetime import datetime
 from uuid import UUID
-
+import pandas as pd
+from io import BytesIO
+from fastapi import UploadFile
 from fastapi import BackgroundTasks, HTTPException
 
 from app.core.supabase_client import supabase
@@ -427,4 +429,69 @@ def delete_attention(attention_id: UUID, deleted_by_id: UUID):
         return None
     except Exception as e:
         print(f"Error en delete_attention: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+# app/services/clinical_attention_service.py
+
+
+
+def import_insurance_excel(insurance_company_id: int, file: UploadFile):
+    try:
+        # Leer Excel
+        content = file.file.read()
+        df = pd.read_excel(BytesIO(content))
+
+        # Validar columnas
+        if "id_episodio" not in df.columns or "pertinencia" not in df.columns:
+            raise HTTPException(
+                status_code=400,
+                detail="El Excel debe incluir columnas: id_episodio, pertinencia"
+            )
+
+        updated_count = 0
+
+        for _, row in df.iterrows():
+            episode = str(row["id_episodio"]).strip()
+            pertinencia = bool(row["pertinencia"])
+
+            # Encontrar la atención clínica
+            attention_resp = (
+                supabase.table("ClinicalAttention")
+                .select("id, patient_id, partinencia")
+                .eq("id_episodio", episode)
+                .execute()
+            )
+
+            if not attention_resp.data:
+                continue
+
+            attention = attention_resp.data[0]
+
+            # Validar aseguradora del paciente
+            patient_resp = (
+                supabase.table("Patient")
+                .select("insurance_company_id")
+                .eq("id", attention["patient_id"])
+                .single()
+                .execute()
+            )
+
+            if not patient_resp.data:
+                continue
+
+            if patient_resp.data["insurance_company_id"] != insurance_company_id:
+                continue
+
+            # Actualizar pertinencia
+            supabase.table("ClinicalAttention").update(
+                {"partinencia": pertinencia}
+            ).eq("id", attention["id"]).execute()
+
+            updated_count += 1
+
+        return updated_count
+
+    except HTTPException:
+        raise
+    except Exception as e:
+        print(f"Error import_insurance_excel: {e}")
         raise HTTPException(status_code=500, detail=str(e))

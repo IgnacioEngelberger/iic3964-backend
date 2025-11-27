@@ -15,7 +15,7 @@ def list_patients() -> list[dict]:
             supabase.table("Patient")
             .select(
                 "id, rut, first_name, last_name,"
-                "mother_last_name, aseguradora, age, sex, height, weight"
+                "mother_last_name, email, aseguradora, age, sex, height, weight"
             )
             .eq("is_deleted", False)
             .order("first_name", desc=False)

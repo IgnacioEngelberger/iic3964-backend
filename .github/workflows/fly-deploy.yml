@@ -3,7 +3,8 @@ name: Deploy to Fly.io
 on:
   push:
     branches:
-      - main
+      - main   # o la rama que quieras desplegar automáticamente
+      - fly-deployment
 
 jobs:
   deploy:

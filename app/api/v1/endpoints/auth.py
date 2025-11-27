@@ -15,7 +15,7 @@ def register_user(user_in: UserCreate):
     Register a new user in Supabase Auth AND the public 'User' table.
     """
     # 1. Validar Rol
-    if user_in.role not in ["resident", "supervisor"]:
+    if user_in.role not in ["resident", "supervisor", "admin"]:
         raise HTTPException(status_code=400, detail="Invalid role")
 
     try:

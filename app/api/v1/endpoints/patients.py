@@ -13,7 +13,7 @@ router = APIRouter()
 def get_patients():
     """
     Get all patients for form selection.
-    Returns a list of patients with id, rut, first_name, last_name, email.
+    Returns a list of patients with id, rut, first_name, last_name.
     """
     try:
         patients = patient_service.list_patients()

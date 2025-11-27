@@ -140,7 +140,7 @@ def get_attention_detail(attention_id: UUID) -> ClinicalAttentionDetailResponse:
             "overwritten_by:overwritten_by_id(id, first_name, last_name), "
             "ai_result, ai_reason, applies_urgency_law, diagnostic,"
             "ai_confidence, medic_approved,"
-            "patient:patient_id(id, rut, first_name, last_name, email), "
+            "patient:patient_id(id, rut, first_name, last_name), "
             "resident_doctor:resident_doctor_id("
             "id, first_name, last_name, email, phone), "
             "supervisor_doctor:supervisor_doctor_id("

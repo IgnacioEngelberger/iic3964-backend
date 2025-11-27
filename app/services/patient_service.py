@@ -7,15 +7,16 @@ from app.schemas.patient import PatientCreate, PatientUpdate
 
 def list_patients() -> list[dict]:
     """
-    Fetch all patients from the database.
-    Returns a list of patient records.
+    Fetch all patients including insurance company info.
     """
     try:
         response = (
             supabase.table("Patient")
             .select(
-                "id, rut, first_name, last_name,"
-                "mother_last_name, aseguradora, age, sex, height, weight"
+                "id, rut, first_name, last_name, mother_last_name, age, sex,"
+                " height, weight,insurance_company_id,"
+                "insurance_company:"
+                "insurance_company(id, nombre_juridico, nombre_comercial, rut)"
             )
             .eq("is_deleted", False)
             .order("first_name", desc=False)
@@ -31,7 +32,12 @@ def get_patient_by_id(patient_id: UUID) -> dict:
     try:
         response = (
             supabase.table("Patient")
-            .select("*")
+            .select(
+                "id, rut, first_name, last_name, mother_last_name, "
+                "insurance_company_id,age, sex, height, weight,"
+                "insurance_company:"
+                "insurance_company(id, nombre_juridico, nombre_comercial, rut)"
+            )
             .eq("id", str(patient_id))
             .single()
             .execute()
@@ -49,9 +55,12 @@ def create_patient(payload: PatientCreate) -> dict:
     try:
         patient_id = str(uuid.uuid4())
         data = payload.model_dump()
+
+        data.pop("insurance_company", None)
+
         data["id"] = patient_id
         data["is_deleted"] = False
-
+        print(f"Creating patient with data: {data}")
         response = supabase.table("Patient").insert(data).execute()
         if not response.data:
             raise Exception("No se pudo crear el paciente")
@@ -69,6 +78,8 @@ def update_patient(patient_id: UUID, payload: PatientUpdate) -> dict:
     try:
         # Filtramos los valores que no sean None para actualizar solo lo enviado
         update_data = payload.model_dump(exclude_unset=True)
+        update_data.pop("insurance_company", None)
+
         if not update_data:
             return get_patient_by_id(patient_id)
 

@@ -27,7 +27,6 @@ class ClinicalAttentionListItem(BaseModel):
     applies_urgency_law: bool | None
     ai_result: bool | None
     medic_approved: bool | None
-    pertinencia: bool | None
 
     class Config:
         from_attributes = True
@@ -95,7 +94,6 @@ class ClinicalAttentionDetailResponse(BaseModel):
     medic_approved: bool | None = None
     overwritten_reason: str | None = None
     overwritten_by: OverwrittenBy | None = None
-    pertinencia: bool | None = None
 
 
 class NestedPatient(BaseModel):

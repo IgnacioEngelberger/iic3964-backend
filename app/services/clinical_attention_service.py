@@ -32,7 +32,7 @@ def list_attentions(
     try:
         select_query = (
             "id,id_episodio, created_at, updated_at, applies_urgency_law,"
-            "ai_result, overwritten_by_id, medic_approved, "
+            "ai_result, overwritten_by_id, medic_approved,"
             "patient:patient_id(rut, first_name, last_name), "
             "resident_doctor:resident_doctor_id(first_name, last_name), "
             "supervisor_doctor:supervisor_doctor_id(first_name, last_name)"

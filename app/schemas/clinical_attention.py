@@ -6,9 +6,9 @@ from pydantic import BaseModel, Field
 
 
 class PatientInfo(BaseModel):
-    rut: str | None
-    first_name: str | None
-    last_name: str | None
+    rut: Optional[str] = None
+    first_name: Optional[str] = None
+    last_name: Optional[str] = None
 
 
 class DoctorInfo(BaseModel):
@@ -27,7 +27,6 @@ class ClinicalAttentionListItem(BaseModel):
     applies_urgency_law: bool | None
     ai_result: bool | None
     medic_approved: bool | None
-    pertinencia: bool | None
 
     class Config:
         from_attributes = True

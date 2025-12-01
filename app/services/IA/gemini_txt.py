@@ -60,7 +60,7 @@ def _normalize_hypotheses(raw: Any) -> List[Dict[str, Any]]:
                     }
                 )
     return output
-import re
+
 
 def remove_triage_section(txt: str) -> str:
     if not txt:
@@ -111,7 +111,10 @@ def _coerce_to_schema(raw: Dict[str, Any]) -> Dict[str, Any]:
     data["diagnosis_hypotheses"] = _normalize_hypotheses(data["diagnosis_hypotheses"])
     return data
 
+
 AI_disabled = False
+
+
 def reason(text: str) -> UrgencyOutput:
     """
     Send raw text about the patient to Gemini and return structured UrgencyOutput.

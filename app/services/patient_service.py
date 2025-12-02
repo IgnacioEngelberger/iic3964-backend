@@ -94,4 +94,4 @@ def update_patient(patient_id: UUID, payload: PatientUpdate) -> dict:
         return response.data[0]
     except Exception as e:
         print(f"Error updating patient: {e}")
-        raise   
+        raise

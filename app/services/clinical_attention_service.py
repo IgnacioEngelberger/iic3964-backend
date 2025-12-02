@@ -9,12 +9,15 @@ from fastapi import BackgroundTasks, HTTPException, UploadFile
 from app.core.supabase_client import supabase
 from app.schemas.clinical_attention import (
     ClinicalAttentionDetailResponse,
+    ClinicalAttentionHistoryItem,
     ClinicalAttentionListItem,
+    ClinicalHistoryResponse,
     CreateClinicalAttentionRequest,
     DeletedBy,
     DoctorDetail,
     DoctorInfo,
     OverwrittenBy,
+    PatientClinicalHistory,
     PatientDetail,
     PatientInfo,
     UpdateClinicalAttentionRequest,
@@ -498,3 +501,73 @@ def import_insurance_excel(insurance_company_id: int, file: UploadFile):
     except Exception as e:
         print(f"Error import_insurance_excel: {e}")
         raise HTTPException(status_code=500, detail=str(e))
+
+
+def get_clinical_history_by_patient_ids(
+    patient_ids: list[UUID],
+) -> ClinicalHistoryResponse:
+    try:
+        if not patient_ids:
+            return ClinicalHistoryResponse(patients=[])
+        print(f"Fetching clinical history for patient IDs: {patient_ids}")
+        patients_history: list[PatientClinicalHistory] = []
+
+        for patient_id in patient_ids:
+            # Get all clinical attentions for this patient
+            select_query = (
+                "id, id_episodio, created_at, applies_urgency_law, is_deleted, "
+                "resident_doctor:resident_doctor_id(first_name, last_name), "
+                "supervisor_doctor:supervisor_doctor_id(first_name, last_name)"
+            )
+
+            attentions_response = (
+                supabase.table("ClinicalAttention")
+                .select(select_query)
+                .eq("patient_id", str(patient_id))
+                .order("created_at", desc=True)
+                .execute()
+            )
+
+            attentions_data = attentions_response.data or []
+            # Filter out deleted records (is_deleted could be True, False, or None/null)
+            attentions_data = [item for item in attentions_data if not item.get("is_deleted")]
+            attentions_list: list[ClinicalAttentionHistoryItem] = []
+
+            for item in attentions_data:
+                resident_data = item.get("resident_doctor") or {}
+                supervisor_data = item.get("supervisor_doctor") or {}
+
+                # Format doctor names as "FirstName LastName"
+                resident_name = None
+                if resident_data.get("first_name") or resident_data.get("last_name"):
+                    resident_name = f"{resident_data.get('first_name', '')} {resident_data.get('last_name', '')}".strip()
+
+                supervisor_name = None
+                if supervisor_data.get("first_name") or supervisor_data.get("last_name"):
+                    supervisor_name = f"{supervisor_data.get('first_name', '')} {supervisor_data.get('last_name', '')}".strip()
+
+                attentions_list.append(
+                    ClinicalAttentionHistoryItem(
+                        id=item["id"],
+                        id_episodio=item.get("id_episodio"),
+                        created_at=item.get("created_at"),
+                        resident_doctor_name=resident_name,
+                        supervisor_doctor_name=supervisor_name,
+                        applies_urgency_law=item.get("applies_urgency_law"),
+                    )
+                )
+
+            patients_history.append(
+                PatientClinicalHistory(
+                    patient_id=patient_id,
+                    attentions=attentions_list,
+                )
+            )
+
+        return ClinicalHistoryResponse(patients=patients_history)
+
+    except Exception as e:
+        print(f"Error en get_clinical_history_by_patient_ids: {e}")
+        raise HTTPException(
+            status_code=500, detail="Error al obtener el historial clínico"
+        )

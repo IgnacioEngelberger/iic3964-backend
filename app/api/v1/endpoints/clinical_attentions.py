@@ -14,9 +14,11 @@ from fastapi import (
 from app.schemas.clinical_attention import (
     ClinicalAttentionDetailResponse,
     ClinicalAttentionsListResponse,
+    ClinicalHistoryResponse,
     CreateClinicalAttentionRequest,
     DeleteClinicalAttentionRequest,
     MedicApprovalRequest,
+    PatientIdsRequest,
     UpdateClinicalAttentionRequest,
 )
 from app.services import clinical_attention_service
@@ -177,3 +179,24 @@ def import_insurance_excel(
     except Exception as e:
         print(f"Error import_insurance_excel: {e}")
         raise HTTPException(status_code=500, detail="Error procesando archivo")
+
+
+@router.post(
+    "/clinical_attentions/history",
+    response_model=ClinicalHistoryResponse,
+    tags=["Clinical Attentions"],
+)
+def get_clinical_history(payload: PatientIdsRequest):
+    try:
+        history = clinical_attention_service.get_clinical_history_by_patient_ids(
+            payload.patient_ids
+        )
+        return history
+    except HTTPException as e:
+        raise e
+    except Exception as e:
+        print(f"Error en endpoint get_clinical_history: {e}")
+        raise HTTPException(
+            status_code=500,
+            detail="Ocurrió un error al obtener el historial clínico",
+        )

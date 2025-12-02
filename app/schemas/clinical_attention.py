@@ -147,3 +147,25 @@ class MedicApprovalRequest(BaseModel):
 
 class DeleteClinicalAttentionRequest(BaseModel):
     deleted_by_id: UUID
+
+
+class PatientIdsRequest(BaseModel):
+    patient_ids: list[UUID] = Field(..., description="List of patient IDs")
+
+
+class ClinicalAttentionHistoryItem(BaseModel):
+    id: UUID
+    id_episodio: Optional[str] = None
+    created_at: Optional[datetime] = None
+    resident_doctor_name: Optional[str] = None
+    supervisor_doctor_name: Optional[str] = None
+    applies_urgency_law: Optional[bool] = None
+
+
+class PatientClinicalHistory(BaseModel):
+    patient_id: UUID
+    attentions: list[ClinicalAttentionHistoryItem]
+
+
+class ClinicalHistoryResponse(BaseModel):
+    patients: list[PatientClinicalHistory]

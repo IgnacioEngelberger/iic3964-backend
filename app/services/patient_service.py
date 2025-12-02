@@ -60,7 +60,6 @@ def create_patient(payload: PatientCreate) -> dict:
 
         data["id"] = patient_id
         data["is_deleted"] = False
-        print(f"Creating patient with data: {data}")
         response = supabase.table("Patient").insert(data).execute()
         if not response.data:
             raise Exception("No se pudo crear el paciente")

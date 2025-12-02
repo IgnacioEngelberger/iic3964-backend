@@ -32,7 +32,7 @@ def list_attentions(
     try:
         select_query = (
             "id,id_episodio, created_at, updated_at, applies_urgency_law,"
-            "ai_result, overwritten_by_id, medic_approved, "
+            "ai_result, overwritten_by_id, medic_approved, pertinencia, "
             "patient:patient_id(rut, first_name, last_name), "
             "resident_doctor:resident_doctor_id(first_name, last_name), "
             "supervisor_doctor:supervisor_doctor_id(first_name, last_name)"
@@ -116,6 +116,7 @@ def list_attentions(
                     resident_doctor=DoctorInfo(**resident_data),
                     supervisor_doctor=DoctorInfo(**supervisor_data),
                     medic_approved=item.get("medic_approved"),
+                    pertinencia=item.get("pertinencia"),
                 )
             )
 
@@ -138,7 +139,7 @@ def get_attention_detail(attention_id: UUID) -> ClinicalAttentionDetailResponse:
             "id, id_episodio, created_at, updated_at, "
             "is_deleted, deleted_at, "
             "deleted_by:deleted_by_id(id, first_name, last_name), "
-            "overwritten_reason, "
+            "overwritten_reason,pertinencia, "
             "overwritten_by:overwritten_by_id(id, first_name, last_name), "
             "ai_result, ai_reason, applies_urgency_law, diagnostic,"
             "ai_confidence, medic_approved,"
@@ -192,6 +193,7 @@ def get_attention_detail(attention_id: UUID) -> ClinicalAttentionDetailResponse:
             diagnostic=item.get("diagnostic"),
             ai_confidence=item.get("ai_confidence"),
             medic_approved=item.get("medic_approved"),
+            pertinencia=item.get("pertinencia"),
         )
 
     except LookupError:

@@ -26,6 +26,7 @@ class ClinicalAttentionListItem(BaseModel):
     supervisor_doctor: DoctorInfo
     applies_urgency_law: bool | None
     ai_result: bool | None
+    pertinencia: bool | None
     medic_approved: bool | None
 
     class Config:

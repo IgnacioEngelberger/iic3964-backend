@@ -193,7 +193,7 @@ def get_attention_detail(attention_id: UUID) -> ClinicalAttentionDetailResponse:
             diagnostic=item.get("diagnostic"),
             ai_confidence=item.get("ai_confidence"),
             medic_approved=item.get("medic_approved"),
-            pertinencia=item.get("pertinencia")
+            pertinencia=item.get("pertinencia"),
         )
 
     except LookupError:

@@ -1,8 +1,10 @@
 from typing import Optional, Union
+
 from pydantic import BaseModel
 
+
 class MetricStats(BaseModel):
-    id: Optional[Union[str, int]] = None 
+    id: Optional[Union[str, int]] = None
     name: Optional[str] = "Desconocido"
 
     # 1. Total episodios subidos
@@ -22,6 +24,7 @@ class MetricStats(BaseModel):
     total_ai_no_medic_yes: int
     # % rechazados por aseguradora
     percent_ai_no_medic_yes_rejected: float
+
 
 class MetricsResponse(BaseModel):
     start_date: Optional[str]

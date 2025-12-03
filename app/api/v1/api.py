@@ -8,8 +8,8 @@ from app.api.v1.endpoints import (
     health,
     insurance_company,
     items,
-    patients,
     metrics,
+    patients,
 )
 
 api_router = APIRouter()

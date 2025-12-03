@@ -450,45 +450,64 @@ def import_insurance_excel(insurance_company_id: int, file: UploadFile):
                 detail="El Excel debe incluir columnas: id_episodio, pertinencia",
             )
 
-        updated_count = 0
+        # Limpiar y preparar datos
+        df["id_episodio"] = df["id_episodio"].astype(str).str.strip()
+        df["pertinencia"] = df["pertinencia"].astype(bool)
 
+        # Obtener todos los episodios del Excel
+        episode_ids = df["id_episodio"].unique().tolist()
+
+        if not episode_ids:
+            return 0
+
+        # Fetch all clinical attentions with patient info in ONE query
+        # Using a join to get patient insurance_company_id directly
+        attentions_resp = (
+            supabase.table("ClinicalAttention")
+            .select("id, id_episodio, patient:patient_id(insurance_company_id)")
+            .in_("id_episodio", episode_ids)
+            .execute()
+        )
+
+        if not attentions_resp.data:
+            return 0
+
+        # Create a lookup map: episode_id -> {attention_id, insurance_company_id}
+        attention_map = {}
+        for attention in attentions_resp.data:
+            patient_data = attention.get("patient") or {}
+            attention_map[attention["id_episodio"]] = {
+                "id": attention["id"],
+                "insurance_company_id": patient_data.get("insurance_company_id"),
+            }
+
+        # Prepare batch updates
+        updates_to_apply = []
         for _, row in df.iterrows():
-            episode = str(row["id_episodio"]).strip()
-            pertinencia = bool(row["pertinencia"])
+            episode = row["id_episodio"]
+            pertinencia = row["pertinencia"]
 
-            # Encontrar la atención clínica
-            attention_resp = (
-                supabase.table("ClinicalAttention")
-                .select("id, patient_id, partinencia")
-                .eq("id_episodio", episode)
-                .execute()
+            # Check if episode exists in our map
+            if episode not in attention_map:
+                continue
+
+            attention_data = attention_map[episode]
+
+            # Validate insurance company
+            if attention_data["insurance_company_id"] != insurance_company_id:
+                continue
+
+            updates_to_apply.append(
+                {"id": attention_data["id"], "pertinencia": pertinencia}
             )
 
-            if not attention_resp.data:
-                continue
-
-            attention = attention_resp.data[0]
-
-            # Validar aseguradora del paciente
-            patient_resp = (
-                supabase.table("Patient")
-                .select("insurance_company_id")
-                .eq("id", attention["patient_id"])
-                .single()
-                .execute()
-            )
-
-            if not patient_resp.data:
-                continue
-
-            if patient_resp.data["insurance_company_id"] != insurance_company_id:
-                continue
-
-            # Actualizar pertinencia
-            supabase.table("ClinicalAttention").update({"partinencia": pertinencia}).eq(
-                "id", attention["id"]
-            ).execute()
-
+        # Apply updates in batch (Supabase doesn't support bulk update directly,
+        # so we'll do it in a more optimized way)
+        updated_count = 0
+        for update_data in updates_to_apply:
+            supabase.table("ClinicalAttention").update(
+                {"pertinencia": update_data["pertinencia"]}
+            ).eq("id", update_data["id"]).execute()
             updated_count += 1
 
         return updated_count

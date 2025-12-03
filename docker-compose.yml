@@ -8,6 +8,8 @@ services:
     environment:
       - ENVIRONMENT=development
       - DATABASE_URL=postgresql://postgres:password@db:5432/iic3964_db
+      - SUPABASE_URL=${SUPABASE_URL}
+      - SUPABASE_KEY=${SUPABASE_KEY}
     depends_on:
       - db
     volumes:

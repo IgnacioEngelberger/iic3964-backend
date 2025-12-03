@@ -9,6 +9,7 @@ from app.api.v1.endpoints import (
     insurance_company,
     items,
     patients,
+    metrics,
 )
 
 api_router = APIRouter()
@@ -18,6 +19,7 @@ api_router.include_router(gemini.router, prefix="/gemini", tags=["gemini"])
 api_router.include_router(auth.router, prefix="/auth", tags=["auth"])
 api_router.include_router(doctors.router, prefix="/doctors", tags=["Doctors"])
 api_router.include_router(patients.router, prefix="/patients", tags=["Patients"])
+api_router.include_router(metrics.router, prefix="/metrics", tags=["Metrics"])
 api_router.include_router(
     clinical_attentions.router, prefix="", tags=["Clinical Attentions"]
 )

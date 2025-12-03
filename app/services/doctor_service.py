@@ -50,7 +50,11 @@ def create_doctor(
     """
     try:
         # Normalizar el rol para que coincida con la BD (resident -> Resident)
-        role_mapping = {"resident": "Resident", "supervisor": "Supervisor"}
+        role_mapping = {
+            "resident": "Resident",
+            "supervisor": "Supervisor",
+            "admin": "Admin",
+        }
         db_role = role_mapping.get(
             role.lower(), "Resident"
         )  # Default a Resident por seguridad

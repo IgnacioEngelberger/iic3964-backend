@@ -27,12 +27,12 @@ def list_attentions(
     page_size: int,
     search: str | None,
     order: str | None,
-    resident_doctor_id: str | UUID | None = None,  # <--- NUEVO PARÁMETRO
+    resident_doctor_id: str | UUID | None = None,
 ) -> dict:
     try:
         select_query = (
             "id,id_episodio, created_at, updated_at, applies_urgency_law,"
-            "ai_result, overwritten_by_id, medic_approved, pertinencia, "
+            "ai_result, overwritten_by_id, medic_approved, pertinencia,"
             "supervisor_approved, supervisor_observation, "
             "patient:patient_id(rut, first_name, last_name), "
             "resident_doctor:resident_doctor_id(first_name, last_name), "
@@ -41,11 +41,8 @@ def list_attentions(
 
         query = supabase.table("ClinicalAttention").select(select_query)
 
-        # --- LÓGICA DE FILTRADO POR ROL ---
         if resident_doctor_id:
-            # Si se pasa un ID de residente, filtramos para mostrar SOLO sus atenciones
             query = query.eq("resident_doctor_id", str(resident_doctor_id))
-        # ----------------------------------
 
         search_filter = None
         if search:
@@ -74,11 +71,10 @@ def list_attentions(
         response = query.execute()
         data = response.data or []
 
-        # Count Query Logic
+        # Count Logic
         count_query = supabase.table("ClinicalAttention").select("id", count="exact")
         count_query = count_query.eq("is_deleted", False)
 
-        # También debemos aplicar el filtro de residente al conteo total
         if resident_doctor_id:
             count_query = count_query.eq("resident_doctor_id", str(resident_doctor_id))
 
@@ -87,7 +83,7 @@ def list_attentions(
         count_response = count_query.execute()
         total_count = count_response.count or len(data)
 
-        # Total Global (sin filtros de búsqueda, pero CON filtro de rol)
+        # Total Global
         total_global_query = supabase.table("ClinicalAttention").select(
             "id", count="exact"
         )
@@ -118,8 +114,8 @@ def list_attentions(
                     supervisor_doctor=DoctorInfo(**supervisor_data),
                     medic_approved=item.get("medic_approved"),
                     pertinencia=item.get("pertinencia"),
-                    supervisor_approved=item.get("supervisor_approved"),  # Mapped
-                    supervisor_observation=item.get("supervisor_observation"),  # Mapped
+                    supervisor_approved=item.get("supervisor_approved"),
+                    supervisor_observation=item.get("supervisor_observation"),
                 )
             )
 
@@ -198,8 +194,8 @@ def get_attention_detail(attention_id: UUID) -> ClinicalAttentionDetailResponse:
             ai_confidence=item.get("ai_confidence"),
             medic_approved=item.get("medic_approved"),
             pertinencia=item.get("pertinencia"),
-            supervisor_approved=item.get("supervisor_approved"),  # Mapped
-            supervisor_observation=item.get("supervisor_observation"),  # Mapped
+            supervisor_approved=item.get("supervisor_approved"),
+            supervisor_observation=item.get("supervisor_observation"),
         )
 
     except LookupError:
@@ -345,6 +341,9 @@ def update_attention(
         if "supervisor_observation" in explicit_data:
             update_data["supervisor_observation"] = payload.supervisor_observation
 
+        if "pertinencia" in explicit_data:
+            update_data["pertinencia"] = payload.pertinencia
+
         if not update_data:
             return attention_detail
 
@@ -379,7 +378,7 @@ def medic_approval(
             )
 
         update_data = {"medic_approved": approved}
-        print(update_data)
+
         if approved is False:
             if not reason:
                 raise HTTPException(
@@ -390,7 +389,6 @@ def medic_approval(
             update_data["overwritten_reason"] = reason
             update_data["overwritten_by_id"] = str(medic_id)
 
-        # Si aprueba, limpiamos rechazo anterior
         if approved is True:
             update_data["overwritten_reason"] = None
             update_data["overwritten_by_id"] = None
@@ -401,7 +399,7 @@ def medic_approval(
             .eq("id", str(attention_id))
             .execute()
         )
-        print(resp)
+
         if not resp.data:
             raise HTTPException(status_code=400, detail="No se pudo actualizar")
 
@@ -446,16 +444,11 @@ def delete_attention(attention_id: UUID, deleted_by_id: UUID):
         raise HTTPException(status_code=500, detail=str(e))
 
 
-# app/services/clinical_attention_service.py
-
-
 def import_insurance_excel(insurance_company_id: int, file: UploadFile):
     try:
-        # Leer Excel
         content = file.file.read()
         df = pd.read_excel(BytesIO(content))
 
-        # Validar columnas
         if "id_episodio" not in df.columns or "pertinencia" not in df.columns:
             raise HTTPException(
                 status_code=400,
@@ -468,7 +461,6 @@ def import_insurance_excel(insurance_company_id: int, file: UploadFile):
             episode = str(row["id_episodio"]).strip()
             pertinencia = bool(row["pertinencia"])
 
-            # Encontrar la atención clínica
             attention_resp = (
                 supabase.table("ClinicalAttention")
                 .select("id, patient_id, partinencia")
@@ -481,7 +473,6 @@ def import_insurance_excel(insurance_company_id: int, file: UploadFile):
 
             attention = attention_resp.data[0]
 
-            # Validar aseguradora del paciente
             patient_resp = (
                 supabase.table("Patient")
                 .select("insurance_company_id")
@@ -496,7 +487,6 @@ def import_insurance_excel(insurance_company_id: int, file: UploadFile):
             if patient_resp.data["insurance_company_id"] != insurance_company_id:
                 continue
 
-            # Actualizar pertinencia
             supabase.table("ClinicalAttention").update({"partinencia": pertinencia}).eq(
                 "id", attention["id"]
             ).execute()

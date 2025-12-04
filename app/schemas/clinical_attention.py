@@ -143,6 +143,7 @@ class UpdateClinicalAttentionRequest(BaseModel):
     overwritten_by: Optional[UUID] = None
     supervisor_approved: Optional[bool] = None
     supervisor_observation: Optional[str] = None
+    pertinencia: Optional[bool] = None
 
 
 class MedicApprovalRequest(BaseModel):

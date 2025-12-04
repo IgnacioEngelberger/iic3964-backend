@@ -1,8 +1,9 @@
 import os
 
-from fastapi import APIRouter, HTTPException, status
+from fastapi import APIRouter, HTTPException, Query, status
 from supabase import Client, create_client
 
+from app.schemas.user import UserListResponse
 from app.services import user_service
 
 from ....models.user import UserUpdate
@@ -15,18 +16,19 @@ SUPABASE_KEY = os.getenv("SUPABASE_KEY")
 supabase_admin: Client = create_client(SUPABASE_URL, SUPABASE_KEY)
 
 
-@router.get("/", tags=["Users"])
-def get_users():
+@router.get("/", response_model=UserListResponse, tags=["Users"])
+def get_users(
+    page: int = Query(1, ge=1),
+    page_size: int = Query(10, ge=1, le=200),
+    search: str | None = Query(None),
+):
     """
-    Returns all system users except patients.
-    Groups users by role: resident, supervisor, admin.
+    Returns all system users with pagination and optional search.
+    Users are sorted by active status first, then by role, then by first name.
+    Search filters by name (first_name + last_name) or email.
     """
     try:
-        residents = user_service.list_residents()
-        supervisors = user_service.list_supervisors()
-        admins = user_service.list_admins()
-
-        return {"resident": residents, "supervisor": supervisors, "admin": admins}
+        return user_service.list_all_users(page=page, page_size=page_size, search=search)
 
     except Exception as e:
         print(f"Error fetching users: {e}")

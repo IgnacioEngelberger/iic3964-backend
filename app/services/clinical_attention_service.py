@@ -33,6 +33,7 @@ def list_attentions(
         select_query = (
             "id,id_episodio, created_at, updated_at, applies_urgency_law,"
             "ai_result, overwritten_by_id, medic_approved, pertinencia, "
+            "supervisor_approved, supervisor_observation, "
             "patient:patient_id(rut, first_name, last_name), "
             "resident_doctor:resident_doctor_id(first_name, last_name), "
             "supervisor_doctor:supervisor_doctor_id(first_name, last_name)"
@@ -117,6 +118,8 @@ def list_attentions(
                     supervisor_doctor=DoctorInfo(**supervisor_data),
                     medic_approved=item.get("medic_approved"),
                     pertinencia=item.get("pertinencia"),
+                    supervisor_approved=item.get("supervisor_approved"),  # Mapped
+                    supervisor_observation=item.get("supervisor_observation"),  # Mapped
                 )
             )
 
@@ -143,6 +146,7 @@ def get_attention_detail(attention_id: UUID) -> ClinicalAttentionDetailResponse:
             "overwritten_by:overwritten_by_id(id, first_name, last_name), "
             "ai_result, ai_reason, applies_urgency_law, diagnostic,"
             "ai_confidence, medic_approved,"
+            "supervisor_approved, supervisor_observation, "
             "patient:patient_id(id, rut, first_name, last_name), "
             "resident_doctor:resident_doctor_id("
             "id, first_name, last_name, email, phone), "
@@ -194,6 +198,8 @@ def get_attention_detail(attention_id: UUID) -> ClinicalAttentionDetailResponse:
             ai_confidence=item.get("ai_confidence"),
             medic_approved=item.get("medic_approved"),
             pertinencia=item.get("pertinencia"),
+            supervisor_approved=item.get("supervisor_approved"),  # Mapped
+            supervisor_observation=item.get("supervisor_observation"),  # Mapped
         )
 
     except LookupError:
@@ -332,6 +338,12 @@ def update_attention(
             update_data["overwritten_by_id"] = str(val) if val else None
         elif editor_id:
             update_data["overwritten_by_id"] = str(editor_id)
+
+        if "supervisor_approved" in explicit_data:
+            update_data["supervisor_approved"] = payload.supervisor_approved
+
+        if "supervisor_observation" in explicit_data:
+            update_data["supervisor_observation"] = payload.supervisor_observation
 
         if not update_data:
             return attention_detail

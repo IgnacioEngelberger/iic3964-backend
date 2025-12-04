@@ -28,6 +28,8 @@ class ClinicalAttentionListItem(BaseModel):
     ai_result: bool | None
     pertinencia: bool | None
     medic_approved: bool | None
+    supervisor_approved: bool | None = None
+    supervisor_observation: str | None = None
 
     class Config:
         from_attributes = True
@@ -96,6 +98,8 @@ class ClinicalAttentionDetailResponse(BaseModel):
     overwritten_reason: str | None = None
     overwritten_by: OverwrittenBy | None = None
     pertinencia: bool | None = None
+    supervisor_approved: bool | None = None
+    supervisor_observation: str | None = None
 
 
 class NestedPatient(BaseModel):
@@ -137,6 +141,8 @@ class UpdateClinicalAttentionRequest(BaseModel):
     overwritten_reason: Optional[str] = None
     medic_approved: Optional[bool] = None
     overwritten_by: Optional[UUID] = None
+    supervisor_approved: Optional[bool] = None
+    supervisor_observation: Optional[str] = None
 
 
 class MedicApprovalRequest(BaseModel):

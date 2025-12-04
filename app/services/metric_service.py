@@ -17,10 +17,6 @@ def _process_rows_to_stats(
     Recibe una lista de atenciones (filas) y calcula las métricas solicitadas.
     """
     total_episodes = len(rows)
-
-    # 2. Ley de urgencia (Final = True)
-    # applies_urgency_law es la decisión final (ya sea porque la IA
-    # acertó o el médico corrigió a True)
     urgency_law_rows = [r for r in rows if r.get("applies_urgency_law") is True]
     total_urgency_law = len(urgency_law_rows)
 
@@ -65,17 +61,13 @@ def _process_rows_to_stats(
 
 
 def get_base_query(start_date: Optional[str], end_date: Optional[str]):
-    """Helper para iniciar la query con filtros de fecha y columnas necesarias"""
-    # Traemos patient(insurance_company_id) para métricas de aseguradora
-    # Traemos resident_doctor para el nombre del usuario
-
-    select_query = (
-        "id, created_at, applies_urgency_law, ai_result, pertinencia, "
-        "resident_doctor_id, "
+    """Helper para iniciar la query de atenciones con filtros de fecha"""
+    query = supabase.table("ClinicalAttention").select(
+        "id, created_at, applies_urgency_law, ai_result, "
+        "pertinencia, resident_doctor_id, "
         "resident_doctor:resident_doctor_id(first_name, last_name), "
         "patient:patient_id(insurance_company_id)"
     )
-    query = supabase.table("ClinicalAttention").select(select_query)
 
     if start_date:
         query = query.gte("created_at", f"{start_date}T00:00:00")
@@ -91,35 +83,50 @@ def get_base_query(start_date: Optional[str], end_date: Optional[str]):
 def get_all_users_metrics(
     start_date: Optional[str] = None, end_date: Optional[str] = None
 ) -> List[MetricStats]:
-    # 1. Obtener toda la data
-    query = get_base_query(start_date, end_date)
+    """
+    1. Obtiene TODOS los usuarios activos (Médicos/Supervisores) de la tabla User.
+    2. Obtiene TODAS las atenciones en el rango de fechas.
+    3. Mapea atenciones a usuarios y calcula stats (incluyendo
+       los que tienen 0 episodios).
+    """
 
-    response = query.execute()
-    data = response.data or []
+    # 1. Obtener lista base de usuarios (Solo Residentes y Supervisores activos)
+    users_resp = (
+        supabase.table("User")
+        .select("id, first_name, last_name, role")
+        .eq("is_deleted", False)
+        .execute()
+    )
+    all_users = users_resp.data or []
 
-    # 2. Agrupar por resident_doctor_id
+    # Inicializar estructura de agrupación para TODOS los usuarios con lista vacía
     grouped = {}
+    for u in all_users:
+        uid = u["id"]
+        full_name = f"{u.get('first_name', '')} {u.get('last_name', '')}".strip()
+        grouped[uid] = {"name": full_name, "rows": []}
 
-    for row in data:
+    # 2. Obtener atenciones
+    query = get_base_query(start_date, end_date)
+    response = query.execute()
+    attentions = response.data or []
+
+    # 3. Asignar atenciones a cada usuario
+    for row in attentions:
         doc_id = row.get("resident_doctor_id")
 
-        if not doc_id:
-            continue
+        # Si el doctor existe en nuestra lista base, agregamos la fila
+        if doc_id and doc_id in grouped:
+            grouped[doc_id]["rows"].append(row)
 
-        if doc_id not in grouped:
-            doc_info = row.get("resident_doctor") or {}
-            first_name = doc_info.get("first_name", "")
-            last_name = doc_info.get("last_name", "")
-            full_name = f"{first_name} {last_name}".strip()
-            grouped[doc_id] = {"name": full_name, "rows": []}
-
-        grouped[doc_id]["rows"].append(row)
-
-    # 3. Calcular métricas para cada grupo
+    # 4. Calcular métricas finales (esto incluirá a usuarios con 0 atenciones)
     results = []
     for doc_id, info in grouped.items():
         stats = _process_rows_to_stats(info["rows"], doc_id, info["name"])
         results.append(stats)
+
+    # Ordenar por nombre para presentación limpia
+    results.sort(key=lambda x: x.name)
 
     return results
 
@@ -127,33 +134,33 @@ def get_all_users_metrics(
 def get_single_user_metrics(
     user_id: str, start_date: Optional[str] = None, end_date: Optional[str] = None
 ) -> MetricStats:
+    """
+    Obtiene métricas de un usuario específico, manejando el caso de 0 atenciones.
+    """
+
+    # 1. Primero obtener información del usuario para asegurar el Nombre correcto
+    #    independientemente de si tiene atenciones o no.
+    user_resp = (
+        supabase.table("User")
+        .select("first_name, last_name")
+        .eq("id", user_id)
+        .single()
+        .execute()
+    )
+
+    user_name = "Usuario Desconocido"
+    if user_resp.data:
+        first_name = user_resp.data.get("first_name", "")
+        last_name = user_resp.data.get("last_name", "")
+        user_name = f"{first_name} {last_name}".strip()
+
+    # 2. Obtener atenciones
     query = get_base_query(start_date, end_date).eq("resident_doctor_id", user_id)
     response = query.execute()
     data = response.data or []
 
-    # Obtener nombre (si hay data, sacarlo del primer registro,
-    # si no, buscarlo en User table)
-    name = "Desconocido"
-    if data:
-        doc_info = data[0].get("resident_doctor") or {}
-        first_name = doc_info.get("first_name", "")
-        last_name = doc_info.get("last_name", "")
-        name = f"{first_name} {last_name}".strip()
-    else:
-        # Fallback si no hay atenciones en el rango, buscamos el nombre del usuario
-        user_resp = (
-            supabase.table("User")
-            .select("first_name, last_name")
-            .eq("id", user_id)
-            .single()
-            .execute()
-        )
-        if user_resp.data:
-            first_name = doc_info.get("first_name", "")
-            last_name = doc_info.get("last_name", "")
-            name = f"{first_name} {last_name}".strip()
-
-    return _process_rows_to_stats(data, user_id, name)
+    # 3. Procesar (incluso si data es [], devolverá stats en 0 con el nombre correcto)
+    return _process_rows_to_stats(data, user_id, user_name)
 
 
 # --- INSURANCE METRICS ---
@@ -177,7 +184,6 @@ def get_insurance_metrics(
         company_name = company_resp.data.get("nombre_juridico")
 
     # PASO 2: Obtener todos los IDs de pacientes que pertenecen a esta aseguradora
-    # Esto evita el error de relación compleja en la query principal
     patients_resp = (
         supabase.table("Patient")
         .select("id")
@@ -202,12 +208,11 @@ def get_insurance_metrics(
         )
 
     # PASO 3: Buscar las atenciones clínicas que pertenezcan a esos pacientes
-    # Usamos el operador .in_() para filtrar por la lista de IDs
     query = (
         supabase.table("ClinicalAttention")
         .select(
-            "id, created_at, applies_urgency_law, ai_result, "
-            "pertinencia, resident_doctor_id"
+            "id, created_at, applies_urgency_law, "
+            "ai_result, pertinencia, resident_doctor_id"
         )
         .in_("patient_id", patient_ids)
     )

@@ -26,7 +26,6 @@ def update_user(
     try:
         payload = {}
 
-        # Same behavior as update_doctor
         if email:
             payload["email"] = email
         if first_name:
@@ -36,7 +35,6 @@ def update_user(
         if role:
             payload["role"] = _normalize_role(role)
 
-        # If nothing to update, return empty
         if not payload:
             return {}
 
@@ -54,11 +52,17 @@ def update_user(
 
 def delete_user(user_id: str) -> bool:
     """
-    Permanently deletes a user from the 'User' table.
-    (Not a soft delete)
+    Soft deletes a user (is_deleted = True).
+    Used to be a hard delete, now deactivates.
     """
     try:
-        response = supabase.table("User").delete().eq("id", user_id).execute()
+        # Changed from .delete() to .update()
+        response = (
+            supabase.table("User")
+            .update({"is_deleted": True})
+            .eq("id", user_id)
+            .execute()
+        )
 
         if not response.data:
             raise Exception(f"User with ID {user_id} not found or delete failed")
@@ -66,20 +70,46 @@ def delete_user(user_id: str) -> bool:
         return True
 
     except Exception as e:
-        print(f"Error in delete_user service: {e}")
+        print(f"Error in delete_user (soft) service: {e}")
+        raise
+
+
+def reactivate_user(user_id: str) -> bool:
+    """
+    Reactivates a user (is_deleted = False).
+    """
+    try:
+        response = (
+            supabase.table("User")
+            .update({"is_deleted": False})
+            .eq("id", user_id)
+            .execute()
+        )
+
+        if not response.data:
+            raise Exception(f"User with ID {user_id} not found or reactivation failed")
+
+        return True
+
+    except Exception as e:
+        print(f"Error in reactivate_user service: {e}")
         raise
 
 
 def list_users_by_role(role: str) -> list[dict]:
     """
     Generic function to list users of a specific role.
+    Now includes deleted users, sorted by active status first.
     """
     try:
         response = (
             supabase.table("User")
-            .select("id, first_name, last_name, email, phone, role")
+            .select("id, first_name, last_name, email, phone, role, is_deleted")
             .eq("role", role)
-            .eq("is_deleted", False)
+            # Removed .eq("is_deleted", False) to show all
+            .order(
+                "is_deleted", desc=False
+            )  # False (Active) first, True (Deleted) last
             .order("first_name", desc=False)
             .execute()
         )

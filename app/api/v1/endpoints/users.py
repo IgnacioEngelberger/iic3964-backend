@@ -76,25 +76,61 @@ def update_user_endpoint(user_id: str, user_in: UserUpdate):
 @router.delete("/{user_id}", tags=["Users"])
 def delete_user(user_id: str):
     """
-    Delete a user from Supabase Auth and from the public User table.
+    Deactivates (Soft Delete) a user.
+    Prevents login by banning the user in Auth and setting is_deleted=True in DB.
     """
-
     if not supabase_admin:
         raise HTTPException(
             status_code=500, detail="Server misconfiguration: No Admin Key"
         )
 
     try:
-        # 1. Delete from Supabase Auth
-        supabase_admin.auth.admin.delete_user(user_id)
+        # 1. Ban user in Supabase Auth
+        # This prevents login instantly.
+        supabase_admin.auth.admin.update_user_by_id(
+            user_id, {"ban_duration": "876600h"}  # ~100 years
+        )
 
-        # 2. Delete from User table (hard delete)
+        # 2. Soft Delete in Public Table
         user_service.delete_user(user_id)
 
-        return {"success": True, "message": "User deleted successfully"}
+        return {"success": True, "message": "User deactivated successfully"}
 
     except Exception as e:
-        print(f"Delete error: {e}")
+        print(f"Deactivation error: {e}")
+        # If user not found in Auth (already gone), ensures DB is updated at least
+        if "User not found" in str(e):
+            user_service.delete_user(user_id)
+            return {"success": True, "message": "User deactivated (DB only)"}
+
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=str(e),
+        )
+
+
+@router.post("/{user_id}/reactivate", tags=["Users"])
+def reactivate_user(user_id: str):
+    """
+    Reactivates a user.
+    Removes the Auth Ban and sets is_deleted=False in DB.
+    """
+    if not supabase_admin:
+        raise HTTPException(
+            status_code=500, detail="Server misconfiguration: No Admin Key"
+        )
+
+    try:
+        # 1. Unban user in Supabase Auth
+        supabase_admin.auth.admin.update_user_by_id(user_id, {"ban_duration": "0"})
+
+        # 2. Reactivate in Public Table
+        user_service.reactivate_user(user_id)
+
+        return {"success": True, "message": "User reactivated successfully"}
+
+    except Exception as e:
+        print(f"Reactivation error: {e}")
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=str(e),

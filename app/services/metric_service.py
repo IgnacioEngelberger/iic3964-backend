@@ -144,14 +144,13 @@ def get_single_user_metrics(
         supabase.table("User")
         .select("first_name, last_name")
         .eq("id", user_id)
-        .single()
         .execute()
     )
 
     user_name = "Usuario Desconocido"
-    if user_resp.data:
-        first_name = user_resp.data.get("first_name", "")
-        last_name = user_resp.data.get("last_name", "")
+    if user_resp.data and len(user_resp.data) > 0:
+        first_name = user_resp.data[0].get("first_name", "")
+        last_name = user_resp.data[0].get("last_name", "")
         user_name = f"{first_name} {last_name}".strip()
 
     # 2. Obtener atenciones
@@ -174,14 +173,13 @@ def get_insurance_metrics(
         supabase.table("insurance_company")
         .select("nombre_juridico")
         .eq("id", company_id)
-        .single()
         .execute()
     )
 
     # Si la aseguradora no existe o falla
     company_name = "Desconocida"
-    if company_resp.data:
-        company_name = company_resp.data.get("nombre_juridico")
+    if company_resp.data and len(company_resp.data) > 0:
+        company_name = company_resp.data[0].get("nombre_juridico")
 
     # PASO 2: Obtener todos los IDs de pacientes que pertenecen a esta aseguradora
     patients_resp = (

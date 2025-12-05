@@ -203,9 +203,10 @@ def import_insurance_excel(
         error_traceback = traceback.format_exc()
         print(f"Error import_insurance_excel: {str(e)}")
         print(f"Traceback: {error_traceback}")
+        error_msg = str(e) if str(e) else "Error desconocido"
         raise HTTPException(
             status_code=500,
-            detail=f"Error procesando archivo: {str(e) if str(e) else 'Error desconocido'}",
+            detail=f"Error procesando archivo: {error_msg}",
         )
 
 

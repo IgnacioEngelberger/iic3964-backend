@@ -25,7 +25,7 @@ app.include_router(api_router, prefix="/v1")
 
 @app.get("/")
 async def root() -> dict[str, str]:
-    return { "message": "IIC3964 Backend API", "version": settings.VERSION }
+    return {"message": "IIC3964 Backend API", "version": settings.VERSION}
 
 
 @app.get("/health")

@@ -62,9 +62,10 @@ def list_attentions(
 ) -> dict:
     try:
         select_query = (
-            "id,id_episodio, created_at, updated_at, applies_urgency_law, diagnostic,"
-            "ai_result, overwritten_by_id, medic_approved, pertinencia,"
-            "supervisor_approved, supervisor_observation, is_closed, closed_at, closing_reason, "
+            "id,id_episodio, created_at, updated_at, applies_urgency_law, "
+            "diagnostic, ai_result, overwritten_by_id, medic_approved, "
+            "pertinencia, supervisor_approved, supervisor_observation, "
+            "is_closed, closed_at, closing_reason, "
             "patient:patient_id(rut, first_name, last_name), "
             "resident_doctor:resident_doctor_id(first_name, last_name), "
             "supervisor_doctor:supervisor_doctor_id(first_name, last_name), "
@@ -119,7 +120,8 @@ def list_attentions(
             )
             patient_ids = [p["id"] for p in (patient_response.data or [])]
             print(
-                f"Patient search '{patient_search}' found {len(patient_ids)} matching patients"
+                f"Patient search '{patient_search}' found "
+                f"{len(patient_ids)} matching patients"
             )
             if len(patient_ids) > 0:
                 # Convert UUIDs to strings and use 'in' filter
@@ -141,7 +143,8 @@ def list_attentions(
             )
             doctor_ids = [d["id"] for d in (doctor_response.data or [])]
             print(
-                f"Doctor search '{doctor_search}' found {len(doctor_ids)} matching doctors"
+                f"Doctor search '{doctor_search}' found "
+                f"{len(doctor_ids)} matching doctors"
             )
             if len(doctor_ids) > 0:
                 # Search for either resident or supervisor matching the doctor IDs
@@ -245,11 +248,11 @@ def list_attentions(
         # Use the same patient_ids from the search above
         if patient_search:
             if patient_ids is not None and len(patient_ids) > 0:
-                count_query = count_query.in_(
-                    "patient_id", [str(pid) for pid in patient_ids]
-                )
+                patient_id_strings = [str(pid) for pid in patient_ids]
+                count_query = count_query.in_("patient_id", patient_id_strings)
                 print(
-                    f"Count query: Applied patient_id filter with {len(patient_ids)} IDs"
+                    f"Count query: Applied patient_id filter with "
+                    f"{len(patient_ids)} IDs"
                 )
             else:
                 count_query = count_query.eq(
@@ -728,14 +731,16 @@ def import_insurance_excel(insurance_company_id: int, file: UploadFile):
                     # Try to parse as boolean/numeric for backwards compatibility
                     try:
                         pertinencia = bool(int(validacion_value))
-                    except:
+                    except (ValueError, TypeError):
                         print(
-                            f"Skipping row {idx}: Invalid validacion value '{validacion_value}'"
+                            f"Skipping row {idx}: Invalid validacion value "
+                            f"'{validacion_value}'"
                         )
                         continue
 
                 print(
-                    f"Processing row {idx}: episode={episode}, pertinencia={pertinencia}"
+                    f"Processing row {idx}: episode={episode}, "
+                    f"pertinencia={pertinencia}"
                 )
 
                 attention_resp = (
@@ -805,9 +810,10 @@ def close_episode(attention_id: UUID, closed_by_id: UUID, closing_reason: str):
         # Validate closing reason
         valid_reasons = ["Muerte", "Hospitalización", "Alta", "Traslado"]
         if closing_reason not in valid_reasons:
+            reasons_str = ", ".join(valid_reasons)
             raise HTTPException(
                 status_code=400,
-                detail=f"Razón de cierre inválida. Debe ser una de: {', '.join(valid_reasons)}",
+                detail=f"Razón de cierre inválida. Debe ser una de: {reasons_str}",
             )
 
         # Check if episode exists and is not deleted

@@ -142,7 +142,9 @@ def _denormalize_role(role: str) -> str:
     return role_mapping.get(role, role.lower())
 
 
-def list_all_users(page: int, page_size: int, search: str | None = None) -> UserListResponse:
+def list_all_users(
+    page: int, page_size: int, search: str | None = None
+) -> UserListResponse:
     """
     List all users (all roles) with pagination and optional search.
     Returns users sorted by:
@@ -154,7 +156,8 @@ def list_all_users(page: int, page_size: int, search: str | None = None) -> User
     """
     try:
         # Fetch all users sorted by is_deleted and first_name
-        # We'll do role sorting in Python since PostgREST doesn't support CASE in ORDER BY
+        # We'll do role sorting in Python since PostgREST doesn't support
+        # CASE in ORDER BY
         all_users_query = (
             supabase.table("User")
             .select("id, first_name, last_name, email, phone, role, is_deleted")
@@ -168,10 +171,11 @@ def list_all_users(page: int, page_size: int, search: str | None = None) -> User
         if search:
             search_lower = search.lower().strip()
             all_data = [
-                u for u in all_data
+                u
+                for u in all_data
                 if (
                     search_lower in f"{u['first_name']} {u['last_name']}".lower()
-                    or (u.get('email') and search_lower in u['email'].lower())
+                    or (u.get("email") and search_lower in u["email"].lower())
                 )
             ]
 

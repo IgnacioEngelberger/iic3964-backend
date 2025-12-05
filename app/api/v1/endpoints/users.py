@@ -28,7 +28,9 @@ def get_users(
     Search filters by name (first_name + last_name) or email.
     """
     try:
-        return user_service.list_all_users(page=page, page_size=page_size, search=search)
+        return user_service.list_all_users(
+            page=page, page_size=page_size, search=search
+        )
 
     except Exception as e:
         print(f"Error fetching users: {e}")

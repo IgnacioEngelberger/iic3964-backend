@@ -173,7 +173,10 @@ class DeleteClinicalAttentionRequest(BaseModel):
 
 class CloseEpisodeRequest(BaseModel):
     closed_by_id: UUID = Field(..., description="ID del usuario que cierra el episodio")
-    closing_reason: str = Field(..., description="Razón del cierre: Muerte, Hospitalización, Alta, Traslado")
+    closing_reason: str = Field(
+        ...,
+        description="Razón del cierre: Muerte, Hospitalización, Alta, Traslado",
+    )
 
 
 class ReopenEpisodeRequest(BaseModel):

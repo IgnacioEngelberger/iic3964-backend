@@ -62,11 +62,16 @@ def list_patients(
                     .or_("is_deleted.is.null,is_deleted.eq.false")
                     .execute()
                 )
-                count = episodes_response.count if episodes_response.count is not None else 0
+                count = (
+                    episodes_response.count
+                    if episodes_response.count is not None
+                    else 0
+                )
                 patient["episodes_count"] = count
             except Exception as e:
                 print(f"Error counting episodes for patient {patient['id']}: {e}")
                 import traceback
+
                 traceback.print_exc()
                 patient["episodes_count"] = 0
 

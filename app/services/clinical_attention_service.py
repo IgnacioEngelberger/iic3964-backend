@@ -28,10 +28,14 @@ def list_attentions(
     search: str | None,
     order: str | None,
     resident_doctor_id: str | UUID | None = None,
+    patient_search: str | None = None,
+    doctor_search: str | None = None,
+    medic_approved: str | None = None,
+    supervisor_approved: str | None = None,
 ) -> dict:
     try:
         select_query = (
-            "id,id_episodio, created_at, updated_at, applies_urgency_law,"
+            "id,id_episodio, created_at, updated_at, applies_urgency_law, diagnostic,"
             "ai_result, overwritten_by_id, medic_approved, pertinencia,"
             "supervisor_approved, supervisor_observation, "
             "patient:patient_id(rut, first_name, last_name), "
@@ -41,18 +45,107 @@ def list_attentions(
 
         query = supabase.table("ClinicalAttention").select(select_query)
 
+        # Filter by is_deleted
+        query = query.or_("is_deleted.is.null,is_deleted.eq.false")
+
         if resident_doctor_id:
             query = query.eq("resident_doctor_id", str(resident_doctor_id))
 
-        search_filter = None
-        if search:
-            search_filter = (
-                f"diagnostic.ilike.%{search}%,"
-                f"Patient!patient_id.rut.ilike.%{search}%,"
-                f"Patient!patient_id.first_name.ilike.%{search}%,"
-                f"Patient!patient_id.last_name.ilike.%{search}%"
+        # Initialize filter variables for reuse in count query
+        patient_ids = None
+        doctor_ids = None
+        search_patient_ids = None
+
+        # Patient search filter - get matching patient IDs first
+        if patient_search:
+            patient_response = (
+                supabase.table("Patient")
+                .select("id")
+                .or_(
+                    f"rut.ilike.%{patient_search}%,"
+                    f"first_name.ilike.%{patient_search}%,"
+                    f"last_name.ilike.%{patient_search}%"
+                )
+                .execute()
             )
-            query = query.filter(f"or({search_filter})")
+            patient_ids = [p["id"] for p in (patient_response.data or [])]
+            print(f"Patient search '{patient_search}' found {len(patient_ids)} matching patients")
+            if len(patient_ids) > 0:
+                # Convert UUIDs to strings and use 'in' filter
+                query = query.in_("patient_id", [str(pid) for pid in patient_ids])
+            else:
+                # No matching patients, return empty result
+                query = query.eq("id", "00000000-0000-0000-0000-000000000000")
+
+        # Doctor search filter - get matching doctor IDs first
+        if doctor_search:
+            doctor_response = (
+                supabase.table("User")
+                .select("id")
+                .or_(
+                    f"first_name.ilike.%{doctor_search}%,"
+                    f"last_name.ilike.%{doctor_search}%"
+                )
+                .execute()
+            )
+            doctor_ids = [d["id"] for d in (doctor_response.data or [])]
+            print(f"Doctor search '{doctor_search}' found {len(doctor_ids)} matching doctors")
+            if len(doctor_ids) > 0:
+                # Search for either resident or supervisor matching the doctor IDs
+                doctor_id_strings = [str(did) for did in doctor_ids]
+                # Format: "column.in.(value1,value2,value3)"
+                in_clause = f"({','.join(doctor_id_strings)})"
+                query = query.or_(
+                    f"resident_doctor_id.in.{in_clause},"
+                    f"supervisor_doctor_id.in.{in_clause}"
+                )
+            else:
+                # No matching doctors, return empty result
+                query = query.eq("id", "00000000-0000-0000-0000-000000000000")
+
+        # Medic approved filter
+        if medic_approved:
+            if medic_approved == "pending":
+                query = query.is_("medic_approved", "null")
+            elif medic_approved == "approved":
+                query = query.eq("medic_approved", True)
+            elif medic_approved == "rejected":
+                query = query.eq("medic_approved", False)
+
+        # Supervisor approved filter
+        if supervisor_approved:
+            if supervisor_approved == "pending":
+                query = query.is_("supervisor_approved", "null")
+            elif supervisor_approved == "approved":
+                query = query.eq("supervisor_approved", True)
+            elif supervisor_approved == "rejected":
+                query = query.eq("supervisor_approved", False)
+
+        # General search filter (diagnostic or patient info)
+        if search:
+            # Get matching patient IDs
+            search_patient_response = (
+                supabase.table("Patient")
+                .select("id")
+                .or_(
+                    f"rut.ilike.%{search}%,"
+                    f"first_name.ilike.%{search}%,"
+                    f"last_name.ilike.%{search}%"
+                )
+                .execute()
+            )
+            search_patient_ids = [p["id"] for p in (search_patient_response.data or [])]
+
+            # Build OR filter: diagnostic OR patient_id in matching patients
+            if len(search_patient_ids) > 0:
+                patient_id_strings = [str(pid) for pid in search_patient_ids]
+                query = query.or_(
+                    f"diagnostic.ilike.%{search}%,"
+                    f"patient_id.in.({','.join(patient_id_strings)})"
+                )
+            else:
+                # Only search in diagnostic
+                query = query.ilike("diagnostic", f"%{search}%")
 
         if order:
             order_fields = order.split(",")
@@ -71,17 +164,65 @@ def list_attentions(
         response = query.execute()
         data = response.data or []
 
-        # Count Logic
+        # Count Logic - apply same filters as main query
         count_query = supabase.table("ClinicalAttention").select("id", count="exact")
-        count_query = count_query.eq("is_deleted", False)
+        count_query = count_query.or_("is_deleted.is.null,is_deleted.eq.false")
 
         if resident_doctor_id:
             count_query = count_query.eq("resident_doctor_id", str(resident_doctor_id))
 
-        if search_filter:
-            count_query = count_query.filter(f"or({search_filter})")
+        # Use the same patient_ids from the search above
+        if patient_search:
+            print(f"Count query: patient_search={patient_search}, patient_ids={patient_ids}")
+            if patient_ids is not None and len(patient_ids) > 0:
+                count_query = count_query.in_("patient_id", [str(pid) for pid in patient_ids])
+                print(f"Count query: Applied patient_id filter with {len(patient_ids)} IDs")
+            else:
+                count_query = count_query.eq("id", "00000000-0000-0000-0000-000000000000")
+                print("Count query: No matching patients, returning empty")
+
+        # Use the same doctor_ids from the search above
+        if doctor_search:
+            if doctor_ids is not None and len(doctor_ids) > 0:
+                doctor_id_strings = [str(did) for did in doctor_ids]
+                in_clause = f"({','.join(doctor_id_strings)})"
+                count_query = count_query.or_(
+                    f"resident_doctor_id.in.{in_clause},"
+                    f"supervisor_doctor_id.in.{in_clause}"
+                )
+            else:
+                count_query = count_query.eq("id", "00000000-0000-0000-0000-000000000000")
+
+        if medic_approved:
+            if medic_approved == "pending":
+                count_query = count_query.is_("medic_approved", "null")
+            elif medic_approved == "approved":
+                count_query = count_query.eq("medic_approved", True)
+            elif medic_approved == "rejected":
+                count_query = count_query.eq("medic_approved", False)
+
+        if supervisor_approved:
+            if supervisor_approved == "pending":
+                count_query = count_query.is_("supervisor_approved", "null")
+            elif supervisor_approved == "approved":
+                count_query = count_query.eq("supervisor_approved", True)
+            elif supervisor_approved == "rejected":
+                count_query = count_query.eq("supervisor_approved", False)
+
+        # Use the same general search logic from main query
+        if search:
+            if search_patient_ids is not None and len(search_patient_ids) > 0:
+                patient_id_strings = [str(pid) for pid in search_patient_ids]
+                count_query = count_query.or_(
+                    f"diagnostic.ilike.%{search}%,"
+                    f"patient_id.in.({','.join(patient_id_strings)})"
+                )
+            else:
+                count_query = count_query.ilike("diagnostic", f"%{search}%")
+
         count_response = count_query.execute()
         total_count = count_response.count or len(data)
+        print(f"Count query result: total_count={total_count}, data_length={len(data)}")
 
         # Total Global
         total_global_query = supabase.table("ClinicalAttention").select(
@@ -110,6 +251,7 @@ def list_attentions(
                     applies_urgency_law=item.get("applies_urgency_law"),
                     ai_result=item.get("ai_result"),
                     patient=PatientInfo(**patient_data),
+                    diagnostic=item.get("diagnostic"),
                     resident_doctor=DoctorInfo(**resident_data),
                     supervisor_doctor=DoctorInfo(**supervisor_data),
                     medic_approved=item.get("medic_approved"),

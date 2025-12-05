@@ -22,6 +22,7 @@ class ClinicalAttentionListItem(BaseModel):
     created_at: Optional[datetime] = None
     updated_at: Optional[datetime] = None
     patient: PatientInfo
+    diagnostic: str
     resident_doctor: DoctorInfo
     supervisor_doctor: DoctorInfo
     applies_urgency_law: bool | None

@@ -446,57 +446,100 @@ def delete_attention(attention_id: UUID, deleted_by_id: UUID):
 
 def import_insurance_excel(insurance_company_id: int, file: UploadFile):
     try:
-        content = file.file.read()
-        df = pd.read_excel(BytesIO(content))
+        print(f"Starting import for insurance_company_id: {insurance_company_id}")
+        print(f"File: {file.filename}, Content-Type: {file.content_type}")
 
-        if "id_episodio" not in df.columns or "pertinencia" not in df.columns:
+        content = file.file.read()
+        print(f"File size: {len(content)} bytes")
+
+        df = pd.read_excel(BytesIO(content))
+        print(f"Excel loaded. Rows: {len(df)}, Columns: {list(df.columns)}")
+
+        # Check for required columns (case insensitive)
+        column_mapping = {}
+        for col in df.columns:
+            col_lower = str(col).lower().strip()
+            if col_lower in ['"episodio"', "episodio", "id_episodio"]:
+                column_mapping["episodio"] = col
+            elif col_lower in ["validación", "validacion", "pertinencia"]:
+                column_mapping["validacion"] = col
+
+        if "episodio" not in column_mapping or "validacion" not in column_mapping:
             raise HTTPException(
                 status_code=400,
-                detail="El Excel debe incluir columnas: id_episodio, pertinencia",
+                detail="El Excel debe incluir columnas: 'Episodio' y 'Validación'",
             )
 
         updated_count = 0
 
-        for _, row in df.iterrows():
-            episode = str(row["id_episodio"]).strip()
-            pertinencia = bool(row["pertinencia"])
+        for idx, row in df.iterrows():
+            try:
+                episode = str(row[column_mapping["episodio"]]).strip()
+                validacion_value = str(row[column_mapping["validacion"]]).strip().upper()
 
-            attention_resp = (
-                supabase.table("ClinicalAttention")
-                .select("id, patient_id, partinencia")
-                .eq("id_episodio", episode)
-                .execute()
-            )
+                # Convert "PERTINENTE" / "NO PERTINENTE" to boolean
+                if validacion_value == "PERTINENTE":
+                    pertinencia = True
+                elif validacion_value == "NO PERTINENTE":
+                    pertinencia = False
+                else:
+                    # Try to parse as boolean/numeric for backwards compatibility
+                    try:
+                        pertinencia = bool(int(validacion_value))
+                    except:
+                        print(f"Skipping row {idx}: Invalid validacion value '{validacion_value}'")
+                        continue
 
-            if not attention_resp.data:
-                continue
+                print(f"Processing row {idx}: episode={episode}, pertinencia={pertinencia}")
 
-            attention = attention_resp.data[0]
+                attention_resp = (
+                    supabase.table("ClinicalAttention")
+                    .select("id, patient_id, pertinencia")
+                    .eq("id_episodio", episode)
+                    .execute()
+                )
 
-            patient_resp = (
-                supabase.table("Patient")
-                .select("insurance_company_id")
-                .eq("id", attention["patient_id"])
-                .single()
-                .execute()
-            )
+                if not attention_resp.data:
+                    print(f"No clinical attention found for episode: {episode}")
+                    continue
 
-            if not patient_resp.data:
-                continue
+                attention = attention_resp.data[0]
 
-            if patient_resp.data["insurance_company_id"] != insurance_company_id:
-                continue
+                patient_resp = (
+                    supabase.table("Patient")
+                    .select("insurance_company_id")
+                    .eq("id", attention["patient_id"])
+                    .single()
+                    .execute()
+                )
 
-            supabase.table("ClinicalAttention").update({"partinencia": pertinencia}).eq(
-                "id", attention["id"]
-            ).execute()
+                if not patient_resp.data:
+                    print(f"No patient found for attention: {attention['id']}")
+                    continue
 
-            updated_count += 1
+                if patient_resp.data["insurance_company_id"] != insurance_company_id:
+                    print(f"Insurance mismatch for episode {episode}")
+                    continue
 
+                supabase.table("ClinicalAttention").update({"pertinencia": pertinencia}).eq(
+                    "id", attention["id"]
+                ).execute()
+
+                updated_count += 1
+            except Exception as row_error:
+                print(f"Error processing row {idx}: {str(row_error)}")
+                import traceback
+                print(traceback.format_exc())
+                # Continue with next row instead of failing completely
+
+        print(f"Import completed. Updated {updated_count} records")
         return updated_count
 
     except HTTPException:
         raise
     except Exception as e:
-        print(f"Error import_insurance_excel: {e}")
+        import traceback
+        error_trace = traceback.format_exc()
+        print(f"Error import_insurance_excel: {str(e)}")
+        print(f"Full traceback:\n{error_trace}")
         raise HTTPException(status_code=500, detail=str(e))

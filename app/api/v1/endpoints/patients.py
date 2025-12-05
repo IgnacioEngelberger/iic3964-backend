@@ -1,7 +1,7 @@
 # app/api/v1/endpoints/patients.py
 from uuid import UUID
 
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, HTTPException, Query
 
 from app.schemas.patient import PatientCreate, PatientUpdate
 from app.services import patient_service
@@ -10,14 +10,20 @@ router = APIRouter()
 
 
 @router.get("/patients", tags=["Patients"])
-def get_patients():
+def get_patients(
+    page: int = Query(1, description="Número de página", ge=1),
+    page_size: int = Query(10, description="Tamaño de página", ge=1),
+    search: str | None = Query(None, description="Buscar en nombre o RUT"),
+):
     """
-    Get all patients for form selection.
-    Returns a list of patients with id, rut, first_name, last_name.
+    Get patients with pagination and search.
+    Returns paginated list of patients with insurance company info and episodes count.
     """
     try:
-        patients = patient_service.list_patients()
-        return {"patients": patients}
+        patients_data = patient_service.list_patients(
+            page=page, page_size=page_size, search=search
+        )
+        return patients_data
     except Exception as e:
         print(f"Error fetching patients: {e}")
         raise HTTPException(

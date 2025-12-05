@@ -38,11 +38,19 @@ def get_clinical_attentions(
     | None = Query(None, description="Buscar en paciente (RUT, nombre) o diagnóstico"),
     order: str
     | None = Query(None, description="Ordenamiento (ej. -created_at,diagnostic)"),
-    patient_search: str | None = Query(None, description="Buscar por paciente (nombre o RUT)"),
+    patient_search: str
+    | None = Query(None, description="Buscar por paciente (nombre o RUT)"),
     doctor_search: str | None = Query(None, description="Buscar por médico (nombre)"),
-    medic_approved: str | None = Query(None, description="Estado validación residente: pending, approved, rejected"),
-    supervisor_approved: str | None = Query(None, description="Estado validación supervisor: pending, approved, rejected"),
-    current_user_id: str | None = Query(None, description="ID del usuario actual para filtrar por rol"),
+    medic_approved: str
+    | None = Query(
+        None, description="Estado validación residente: pending, approved, rejected"
+    ),
+    supervisor_approved: str
+    | None = Query(
+        None, description="Estado validación supervisor: pending, approved, rejected"
+    ),
+    current_user_id: str
+    | None = Query(None, description="ID del usuario actual para filtrar por rol"),
 ):
     try:
         attentions_data = clinical_attention_service.list_attentions(
@@ -191,12 +199,13 @@ def import_insurance_excel(
         return {"updated": updated, "message": "Archivo procesado correctamente"}
     except Exception as e:
         import traceback
+
         error_traceback = traceback.format_exc()
         print(f"Error import_insurance_excel: {str(e)}")
         print(f"Traceback: {error_traceback}")
         raise HTTPException(
             status_code=500,
-            detail=f"Error procesando archivo: {str(e) if str(e) else 'Error desconocido'}"
+            detail=f"Error procesando archivo: {str(e) if str(e) else 'Error desconocido'}",
         )
 
 
@@ -314,9 +323,7 @@ def get_clinical_attention_history(payload: dict):
         )
 
 
-@router.post(
-    "/clinical_attentions/{attention_id}/close", tags=["Clinical Attentions"]
-)
+@router.post("/clinical_attentions/{attention_id}/close", tags=["Clinical Attentions"])
 def close_episode(attention_id: UUID, payload: CloseEpisodeRequest):
     """
     Close a clinical attention episode.
@@ -337,9 +344,7 @@ def close_episode(attention_id: UUID, payload: CloseEpisodeRequest):
         raise HTTPException(status_code=500, detail="Internal error")
 
 
-@router.post(
-    "/clinical_attentions/{attention_id}/reopen", tags=["Clinical Attentions"]
-)
+@router.post("/clinical_attentions/{attention_id}/reopen", tags=["Clinical Attentions"])
 def reopen_episode(attention_id: UUID, payload: ReopenEpisodeRequest):
     """
     Reopen a closed clinical attention episode.

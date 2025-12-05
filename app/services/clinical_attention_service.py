@@ -82,16 +82,22 @@ def list_attentions(
         # Role-based filtering for non-admin users
         if current_user_id:
             # Get user's role
-            user_response = supabase.table("User").select("role").eq("id", str(current_user_id)).execute()
+            user_response = (
+                supabase.table("User")
+                .select("role")
+                .eq("id", str(current_user_id))
+                .execute()
+            )
 
             if user_response.data and len(user_response.data) > 0:
                 user_role = user_response.data[0].get("role")
 
-                # If not admin, filter to only show episodes where user is resident or supervisor
+                # If not admin, filter to show episodes where user is
+                # resident or supervisor
                 if user_role != "Admin":
                     query = query.or_(
-                        f"resident_doctor_id.eq.{str(current_user_id)},"
-                        f"supervisor_doctor_id.eq.{str(current_user_id)}"
+                        f"resident_doctor_id.eq.{current_user_id!s},"
+                        f"supervisor_doctor_id.eq.{current_user_id!s}",
                     )
 
         # Initialize filter variables for reuse in count query
@@ -112,7 +118,9 @@ def list_attentions(
                 .execute()
             )
             patient_ids = [p["id"] for p in (patient_response.data or [])]
-            print(f"Patient search '{patient_search}' found {len(patient_ids)} matching patients")
+            print(
+                f"Patient search '{patient_search}' found {len(patient_ids)} matching patients"
+            )
             if len(patient_ids) > 0:
                 # Convert UUIDs to strings and use 'in' filter
                 query = query.in_("patient_id", [str(pid) for pid in patient_ids])
@@ -132,7 +140,9 @@ def list_attentions(
                 .execute()
             )
             doctor_ids = [d["id"] for d in (doctor_response.data or [])]
-            print(f"Doctor search '{doctor_search}' found {len(doctor_ids)} matching doctors")
+            print(
+                f"Doctor search '{doctor_search}' found {len(doctor_ids)} matching doctors"
+            )
             if len(doctor_ids) > 0:
                 # Search for either resident or supervisor matching the doctor IDs
                 doctor_id_strings = [str(did) for did in doctor_ids]
@@ -216,25 +226,35 @@ def list_attentions(
 
         # Role-based filtering for non-admin users (same as main query)
         if current_user_id:
-            user_response = supabase.table("User").select("role").eq("id", str(current_user_id)).execute()
+            user_response = (
+                supabase.table("User")
+                .select("role")
+                .eq("id", str(current_user_id))
+                .execute()
+            )
 
             if user_response.data and len(user_response.data) > 0:
                 user_role = user_response.data[0].get("role")
 
                 if user_role != "Admin":
                     count_query = count_query.or_(
-                        f"resident_doctor_id.eq.{str(current_user_id)},"
-                        f"supervisor_doctor_id.eq.{str(current_user_id)}"
+                        f"resident_doctor_id.eq.{current_user_id!s},"
+                        f"supervisor_doctor_id.eq.{current_user_id!s}",
                     )
 
         # Use the same patient_ids from the search above
         if patient_search:
-            print(f"Count query: patient_search={patient_search}, patient_ids={patient_ids}")
             if patient_ids is not None and len(patient_ids) > 0:
-                count_query = count_query.in_("patient_id", [str(pid) for pid in patient_ids])
-                print(f"Count query: Applied patient_id filter with {len(patient_ids)} IDs")
+                count_query = count_query.in_(
+                    "patient_id", [str(pid) for pid in patient_ids]
+                )
+                print(
+                    f"Count query: Applied patient_id filter with {len(patient_ids)} IDs"
+                )
             else:
-                count_query = count_query.eq("id", "00000000-0000-0000-0000-000000000000")
+                count_query = count_query.eq(
+                    "id", "00000000-0000-0000-0000-000000000000"
+                )
                 print("Count query: No matching patients, returning empty")
 
         # Use the same doctor_ids from the search above
@@ -247,7 +267,9 @@ def list_attentions(
                     f"supervisor_doctor_id.in.{in_clause}"
                 )
             else:
-                count_query = count_query.eq("id", "00000000-0000-0000-0000-000000000000")
+                count_query = count_query.eq(
+                    "id", "00000000-0000-0000-0000-000000000000"
+                )
 
         if medic_approved:
             if medic_approved == "pending":
@@ -693,7 +715,9 @@ def import_insurance_excel(insurance_company_id: int, file: UploadFile):
         for idx, row in df.iterrows():
             try:
                 episode = str(row[column_mapping["episodio"]]).strip()
-                validacion_value = str(row[column_mapping["validacion"]]).strip().upper()
+                validacion_value = (
+                    str(row[column_mapping["validacion"]]).strip().upper()
+                )
 
                 # Convert "PERTINENTE" / "NO PERTINENTE" to boolean
                 if validacion_value == "PERTINENTE":
@@ -705,10 +729,14 @@ def import_insurance_excel(insurance_company_id: int, file: UploadFile):
                     try:
                         pertinencia = bool(int(validacion_value))
                     except:
-                        print(f"Skipping row {idx}: Invalid validacion value '{validacion_value}'")
+                        print(
+                            f"Skipping row {idx}: Invalid validacion value '{validacion_value}'"
+                        )
                         continue
 
-                print(f"Processing row {idx}: episode={episode}, pertinencia={pertinencia}")
+                print(
+                    f"Processing row {idx}: episode={episode}, pertinencia={pertinencia}"
+                )
 
                 attention_resp = (
                     supabase.table("ClinicalAttention")
@@ -739,14 +767,15 @@ def import_insurance_excel(insurance_company_id: int, file: UploadFile):
                     print(f"Insurance mismatch for episode {episode}")
                     continue
 
-                supabase.table("ClinicalAttention").update({"pertinencia": pertinencia}).eq(
-                    "id", attention["id"]
-                ).execute()
+                supabase.table("ClinicalAttention").update(
+                    {"pertinencia": pertinencia}
+                ).eq("id", attention["id"]).execute()
 
                 updated_count += 1
             except Exception as row_error:
                 print(f"Error processing row {idx}: {str(row_error)}")
                 import traceback
+
                 print(traceback.format_exc())
                 # Continue with next row instead of failing completely
 
@@ -757,6 +786,7 @@ def import_insurance_excel(insurance_company_id: int, file: UploadFile):
         raise
     except Exception as e:
         import traceback
+
         error_trace = traceback.format_exc()
         print(f"Error import_insurance_excel: {str(e)}")
         print(f"Full traceback:\n{error_trace}")
@@ -789,7 +819,9 @@ def close_episode(attention_id: UUID, closed_by_id: UUID, closing_reason: str):
         )
 
         if not response.data or len(response.data) == 0:
-            raise HTTPException(status_code=404, detail="Atención clínica no encontrada")
+            raise HTTPException(
+                status_code=404, detail="Atención clínica no encontrada"
+            )
 
         attention = response.data[0]
 
@@ -861,7 +893,9 @@ def reopen_episode(attention_id: UUID, reopened_by_id: UUID):
         )
 
         if not response.data or len(response.data) == 0:
-            raise HTTPException(status_code=404, detail="Atención clínica no encontrada")
+            raise HTTPException(
+                status_code=404, detail="Atención clínica no encontrada"
+            )
 
         attention = response.data[0]
 
@@ -876,12 +910,14 @@ def reopen_episode(attention_id: UUID, reopened_by_id: UUID):
         # Reopen the episode
         update_response = (
             supabase.table("ClinicalAttention")
-            .update({
-                "is_closed": False,
-                "closed_at": None,
-                "closed_by_id": None,
-                "closing_reason": None,
-            })
+            .update(
+                {
+                    "is_closed": False,
+                    "closed_at": None,
+                    "closed_by_id": None,
+                    "closing_reason": None,
+                }
+            )
             .eq("id", str(attention_id))
             .execute()
         )

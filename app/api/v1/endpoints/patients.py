@@ -12,7 +12,7 @@ router = APIRouter()
 @router.get("/patients", tags=["Patients"])
 def get_patients(
     page: int = Query(1, description="Número de página", ge=1),
-    page_size: int = Query(10, description="Tamaño de página", ge=1, le=200),
+    page_size: int = Query(10, description="Tamaño de página", ge=1),
     search: str | None = Query(None, description="Buscar en nombre o RUT"),
 ):
     """

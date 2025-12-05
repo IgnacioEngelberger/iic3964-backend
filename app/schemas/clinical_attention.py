@@ -31,6 +31,10 @@ class ClinicalAttentionListItem(BaseModel):
     medic_approved: bool | None
     supervisor_approved: bool | None = None
     supervisor_observation: str | None = None
+    is_closed: bool | None = None
+    closed_at: Optional[datetime] = None
+    closed_by: Optional[DoctorInfo] = None
+    closing_reason: Optional[str] = None
 
     class Config:
         from_attributes = True
@@ -77,6 +81,12 @@ class DoctorDetail(BaseModel):
     phone: Optional[str]
 
 
+class ClosedBy(BaseModel):
+    id: UUID
+    first_name: Optional[str]
+    last_name: Optional[str]
+
+
 class ClinicalAttentionDetailResponse(BaseModel):
     id: UUID
     id_episodio: Optional[str] = None
@@ -101,6 +111,10 @@ class ClinicalAttentionDetailResponse(BaseModel):
     pertinencia: bool | None = None
     supervisor_approved: bool | None = None
     supervisor_observation: str | None = None
+    is_closed: bool | None = None
+    closed_at: Optional[str] = None
+    closed_by: Optional[ClosedBy] = None
+    closing_reason: Optional[str] = None
 
 
 class NestedPatient(BaseModel):
@@ -155,3 +169,12 @@ class MedicApprovalRequest(BaseModel):
 
 class DeleteClinicalAttentionRequest(BaseModel):
     deleted_by_id: UUID
+
+
+class CloseEpisodeRequest(BaseModel):
+    closed_by_id: UUID = Field(..., description="ID del usuario que cierra el episodio")
+    closing_reason: str = Field(..., description="Razón del cierre: Muerte, Hospitalización, Alta, Traslado")
+
+
+class ReopenEpisodeRequest(BaseModel):
+    reopened_by_id: UUID = Field(..., description="ID del admin que reabre el episodio")

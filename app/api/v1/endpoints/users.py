@@ -19,7 +19,7 @@ supabase_admin: Client = create_client(SUPABASE_URL, SUPABASE_KEY)
 @router.get("/", response_model=UserListResponse, tags=["Users"])
 def get_users(
     page: int = Query(1, ge=1),
-    page_size: int = Query(10, ge=1, le=200),
+    page_size: int = Query(10, ge=1),
     search: str | None = Query(None),
 ):
     """

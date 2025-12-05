@@ -18,7 +18,7 @@ router = APIRouter()
 )
 def list_insurance_companies(
     page: int = Query(1, ge=1),
-    page_size: int = Query(10, ge=1, le=200),
+    page_size: int = Query(10, ge=1, le=1000),
     search: str | None = Query(None),
     order: str | None = Query(None),
 ):

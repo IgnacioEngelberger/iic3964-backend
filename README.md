@@ -191,7 +191,33 @@ poetry run pytest tests/ --cov=app --cov-report=html
 
 # Ejecutar tests específicos
 poetry run pytest tests/test_items.py -v
+
+# Ejecutar solo tests de servicios (unit tests)
+poetry run pytest tests/test_clinical_attention_service.py -v
+
+# Ejecutar solo tests de endpoints (integration tests)
+poetry run pytest tests/test_clinical_attentions_endpoints.py -v
 ```
+
+### Tests Disponibles
+
+- **`test_main.py`**: Tests básicos de la aplicación
+- **`test_clinical_attention_service.py`**: Unit tests del servicio de atenciones clínicas (13 tests)
+  - Listado de atenciones con filtros y paginación
+  - Detalle de atención clínica
+  - Creación de atenciones
+  - Aprobación médica (toggle de ley de urgencia)
+  - Importación de Excel de aseguradoras
+- **`test_clinical_attentions_endpoints.py`**: Integration tests de endpoints REST (14 tests)
+  - GET `/clinical_attentions` - Listado
+  - GET `/clinical_attentions/{id}` - Detalle
+  - POST `/clinical_attentions` - Crear
+  - PATCH `/clinical_attentions/{id}/medic_approval` - Aprobar/rechazar
+  - DELETE `/clinical_attentions/{id}` - Eliminar (soft delete)
+  - POST `/clinical_attentions/import_insurance_excel` - Importar Excel
+  - POST `/clinical_attentions/history` - Historial por pacientes
+
+Los tests utilizan mocks de Supabase y Gemini AI para evitar llamadas a servicios externos.
 
 ## 🔍 Linting y Formateo
 

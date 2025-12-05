@@ -2,7 +2,7 @@ from datetime import datetime
 from typing import Optional, Union
 from uuid import UUID
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, ConfigDict, Field
 
 
 class PatientInfo(BaseModel):
@@ -31,8 +31,7 @@ class ClinicalAttentionListItem(BaseModel):
     supervisor_approved: bool | None = None
     supervisor_observation: str | None = None
 
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)
 
 
 class ClinicalAttentionsListResponse(BaseModel):
@@ -41,12 +40,6 @@ class ClinicalAttentionsListResponse(BaseModel):
     page: int
     page_size: int
     results: list[ClinicalAttentionListItem]
-
-
-class _PersonBase(BaseModel):
-    id: UUID
-    first_name: str
-    last_name: str
 
 
 class DeletedBy(BaseModel):

@@ -1,5 +1,5 @@
 import uuid
-from datetime import datetime
+from datetime import datetime, timezone
 from io import BytesIO
 from uuid import UUID
 
@@ -425,7 +425,7 @@ def delete_attention(attention_id: UUID, deleted_by_id: UUID):
             .update(
                 {
                     "is_deleted": True,
-                    "deleted_at": datetime.utcnow().isoformat(),
+                    "deleted_at": datetime.now(timezone.utc).isoformat(),
                     "deleted_by_id": str(deleted_by_id),
                 }
             )
@@ -463,7 +463,7 @@ def import_insurance_excel(insurance_company_id: int, file: UploadFile):
 
             attention_resp = (
                 supabase.table("ClinicalAttention")
-                .select("id, patient_id, partinencia")
+                .select("id, patient_id, pertinencia")
                 .eq("id_episodio", episode)
                 .execute()
             )
@@ -487,7 +487,7 @@ def import_insurance_excel(insurance_company_id: int, file: UploadFile):
             if patient_resp.data["insurance_company_id"] != insurance_company_id:
                 continue
 
-            supabase.table("ClinicalAttention").update({"partinencia": pertinencia}).eq(
+            supabase.table("ClinicalAttention").update({"pertinencia": pertinencia}).eq(
                 "id", attention["id"]
             ).execute()
 

@@ -4,7 +4,7 @@ Pydantic models for Gemini Urgency input and output schemas.
 
 from typing import List, Literal, Optional
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, ConfigDict, Field
 
 
 class Dx(BaseModel):
@@ -32,27 +32,27 @@ class UrgencyInput(BaseModel):
 
     symptoms: str = Field(
         ...,
-        example="Dolor torácico intenso y sudoración profusa",
+        json_schema_extra={"example": "Dolor torácico intenso y sudoración profusa"},
     )
     vitals: Optional[str] = Field(
         None,
-        example="TA 90/60, FC 110, SatO2 96%",
+        json_schema_extra={"example": "TA 90/60, FC 110, SatO2 96%"},
     )
     age: Optional[str] = Field(
         None,
-        example="67",
+        json_schema_extra={"example": "67"},
     )
     comorbidities: Optional[str] = Field(
         None,
-        example="hipertensión, diabetes",
+        json_schema_extra={"example": "hipertensión, diabetes"},
     )
     onset: Optional[str] = Field(
         None,
-        example="2 horas",
+        json_schema_extra={"example": "2 horas"},
     )
 
-    class Config:
-        schema_extra = {
+    model_config = ConfigDict(
+        json_schema_extra={
             "example": {
                 "symptoms": "Dolor torácico intenso y sudoración profusa",
                 "vitals": "TA 90/60, FC 110, SatO2 96%",
@@ -61,6 +61,7 @@ class UrgencyInput(BaseModel):
                 "onset": "2 horas",
             }
         }
+    )
 
 
 class UrgencyOutput(BaseModel):
@@ -72,8 +73,8 @@ class UrgencyOutput(BaseModel):
     rationale: str
     actions: List[str]
 
-    class Config:
-        schema_extra = {
+    model_config = ConfigDict(
+        json_schema_extra={
             "example": {
                 "urgency_flag": "applies",
                 "urgency_confidence": 0.92,
@@ -90,3 +91,4 @@ class UrgencyOutput(BaseModel):
                 ],
             }
         }
+    )

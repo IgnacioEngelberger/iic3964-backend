@@ -88,7 +88,8 @@ def delete_user(user_id: str):
         # 1. Ban user in Supabase Auth
         # This prevents login instantly.
         supabase_admin.auth.admin.update_user_by_id(
-            user_id, {"ban_duration": "876600h"}  # ~100 years
+            user_id,
+            {"ban_duration": "876600h"},  # ~100 years
         )
 
         # 2. Soft Delete in Public Table

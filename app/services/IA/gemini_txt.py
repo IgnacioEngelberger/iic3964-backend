@@ -75,31 +75,6 @@ def remove_triage_section(txt: str) -> str:
     return cleaned
 
 
-def _normalize_citations(raw: Any) -> List[str]:
-    if not raw:
-        return []
-    return [str(x).strip() for x in raw if str(x).strip()][:10]
-
-
-def _normalize_citations_structured(raw: Any) -> List[Dict[str, Any]]:
-    output = []
-    if isinstance(raw, list):
-        for item in raw:
-            if isinstance(item, dict):
-                section = item.get("section", "general")
-                if section not in {"urgency", "diagnosis_top", "actions", "general"}:
-                    section = "general"
-                output.append(
-                    {
-                        "label": item.get("label", ""),
-                        "url": item.get("url", ""),
-                        "snippet": item.get("snippet", ""),
-                        "section": section,
-                    }
-                )
-    return output
-
-
 def _coerce_to_schema(raw: Dict[str, Any]) -> Dict[str, Any]:
     data = dict(raw)
     data.setdefault("urgency_flag", "uncertain")
